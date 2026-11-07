@@ -1,0 +1,219 @@
+/**
+ * PelisStream v2 - Remote Focus & D-Pad Navigation System
+ * TV-first active focus controller for Smart TV Remotes & Keyboard arrows.
+ * High-framerate 60fps design with zero composite thrashing.
+ * Supports both .tv-focused (applied by SpatialNavigationEngine) and :focus-visible.
+ */
+
+/* ==========================================================================
+   FOCUSABLE BASE
+   ========================================================================== */
+.tv-focusable,
+.media-card,
+.hero__button,
+.modal__close,
+.details__action,
+.details__season-button,
+.details__episode-button,
+.details__rating-button,
+.player__provider,
+.tv-server-pill,
+.tv-card,
+.tv-btn,
+.tv-tab {
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Hardware acceleration hints */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
+  transition: 
+    transform var(--tv-transition-fast), 
+    outline var(--tv-transition-fast), 
+    box-shadow var(--tv-transition-fast),
+    background-color var(--tv-transition-fast),
+    border-color var(--tv-transition-fast);
+}
+
+/* Clear default browser focus outlines */
+*:focus {
+  outline: none;
+}
+
+/* ==========================================================================
+   GLOBAL ACTIVE FOCUS STATE (.tv-focused & :focus-visible)
+   ========================================================================== */
+.tv-focused,
+:focus-visible {
+  z-index: var(--tv-z-card-focused);
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 3px;
+  /* GPU-efficient single glow box-shadow */
+  box-shadow: 0 0 20px var(--tv-cyan-glow);
+}
+
+/* ==========================================================================
+   1. CARD FOCUS SPECIALIZATION (.tv-card & .media-card)
+   ========================================================================== */
+.tv-card.tv-focused,
+.tv-card:focus-visible,
+.media-card.tv-focused,
+.media-card:focus-visible {
+  transform: scale3d(var(--tv-scale-card), var(--tv-scale-card), 1) translateZ(0);
+  z-index: var(--tv-z-card-focused);
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 24px var(--tv-cyan-glow);
+}
+
+/* Reveal extra details / highlight title on focused card */
+.tv-card.tv-focused .tv-card-title,
+.tv-card:focus-visible .tv-card-title,
+.media-card.tv-focused .media-card__title,
+.media-card:focus-visible .media-card__title {
+  color: var(--tv-cyan-neon);
+}
+
+.tv-card.tv-focused .tv-card-poster,
+.tv-card:focus-visible .tv-card-poster,
+.media-card.tv-focused .media-card__image,
+.media-card:focus-visible .media-card__image {
+  filter: brightness(1.1) contrast(1.05);
+}
+
+/* Landscape Episode Card focus */
+.tv-episode-card.tv-focused,
+.tv-episode-card:focus-visible,
+.details__episode-button.tv-focused,
+.details__episode-button:focus-visible {
+  transform: scale3d(1.06, 1.06, 1) translateZ(0);
+  z-index: var(--tv-z-card-focused);
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 20px var(--tv-cyan-glow);
+}
+
+/* ==========================================================================
+   2. BUTTON & ACTION FOCUS SPECIALIZATION
+   ========================================================================== */
+.tv-btn.tv-focused,
+.tv-btn:focus-visible,
+.hero__button.tv-focused,
+.hero__button:focus-visible,
+.details__action.tv-focused,
+.details__action:focus-visible {
+  transform: scale3d(var(--tv-scale-button), var(--tv-scale-button), 1) translateZ(0);
+  z-index: var(--tv-z-card-focused);
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 3px;
+  box-shadow: 0 0 20px var(--tv-cyan-glow);
+}
+
+/* Primary play button focus */
+.tv-btn-primary.tv-focused,
+.tv-btn-primary:focus-visible,
+.hero__button--primary.tv-focused,
+.hero__button--primary:focus-visible,
+.details__action--primary.tv-focused,
+.details__action--primary:focus-visible {
+  background-color: #ffffff;
+  color: #07090e;
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 4px;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.6);
+}
+
+/* Secondary outline button focus */
+.tv-btn-secondary.tv-focused,
+.tv-btn-secondary:focus-visible,
+.hero__button:not(.hero__button--primary).tv-focused,
+.hero__button:not(.hero__button--primary):focus-visible {
+  background-color: var(--tv-cyan-subtle);
+  border-color: var(--tv-cyan-neon);
+  color: #ffffff;
+  outline: var(--tv-outline-width) solid var(--tv-cyan-neon);
+  outline-offset: 3px;
+}
+
+/* Danger / Close button focus */
+.tv-btn-close.tv-focused,
+.tv-btn-close:focus-visible,
+.modal__close.tv-focused,
+.modal__close:focus-visible {
+  background-color: rgba(239, 68, 68, 0.25);
+  outline: var(--tv-outline-width) solid #ef4444;
+  outline-offset: 2px;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.5);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   3. PILL / SERVER / CHIP / TAB FOCUS
+   ========================================================================== */
+.tv-chip.tv-focused,
+.tv-chip:focus-visible,
+.tv-server-pill.tv-focused,
+.tv-server-pill:focus-visible,
+.player__provider.tv-focused,
+.player__provider:focus-visible,
+.tv-tab.tv-focused,
+.tv-tab:focus-visible,
+.details__season-button.tv-focused,
+.details__season-button:focus-visible,
+.details__rating-button.tv-focused,
+.details__rating-button:focus-visible {
+  transform: scale3d(var(--tv-scale-chip), var(--tv-scale-chip), 1) translateZ(0);
+  z-index: 10;
+  border-color: var(--tv-cyan-neon);
+  outline: 2px solid var(--tv-cyan-neon);
+  outline-offset: 2px;
+  background-color: rgba(56, 189, 248, 0.2);
+  color: #ffffff;
+  box-shadow: 0 0 16px var(--tv-cyan-glow);
+}
+
+/* Active server state indicator */
+.tv-server-pill.tv-server-active,
+.player__provider.is-active {
+  border-color: var(--tv-cyan-neon);
+  background-color: var(--tv-cyan-neon);
+  color: #07090e;
+  font-weight: var(--tv-weight-bold);
+  box-shadow: 0 0 12px var(--tv-cyan-glow);
+}
+
+/* ==========================================================================
+   NAVIGATION HINT ON-SCREEN HELPER
+   ========================================================================== */
+.tv-remote-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: var(--tv-overscan-x);
+  display: flex;
+  align-items: center;
+  gap: var(--tv-space-4);
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid var(--tv-border-subtle);
+  border-radius: var(--tv-radius-pill);
+  padding: 8px 18px;
+  font-size: var(--tv-font-meta);
+  color: var(--tv-text-muted);
+  z-index: var(--tv-z-header);
+  pointer-events: none;
+}
+
+.tv-remote-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--tv-radius-xs);
+  font-size: 0.75rem;
+  font-weight: var(--tv-weight-bold);
+  color: var(--tv-text-primary);
+  margin-right: 4px;
+}

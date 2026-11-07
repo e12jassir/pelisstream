@@ -262,7 +262,11 @@ export class DetailsModal {
       displayYear(item),
       formatRuntime(item.runtimeMinutes),
       item.imdbRating > 0 ? `★ ${item.imdbRating.toFixed(1)}` : '',
-      item.type === 'series' ? `${item.totalSeasons ?? 0} temporadas` : 'Película',
+      item.type === 'series'
+        ? item.totalSeasons
+          ? `${item.totalSeasons} temporadas`
+          : 'Serie'
+        : 'Película',
     ]
       .filter((part) => part.length > 0)
       .join(' · ');

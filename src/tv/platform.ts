@@ -247,6 +247,17 @@ export class TVPlatform {
     if (handled) {
       event.preventDefault();
       event.stopPropagation();
+      return;
+    }
+
+    // D-Pad keys must never scroll the page, even at a navigation edge.
+    if (
+      action === TVAction.UP ||
+      action === TVAction.DOWN ||
+      action === TVAction.LEFT ||
+      action === TVAction.RIGHT
+    ) {
+      event.preventDefault();
     }
   }
 

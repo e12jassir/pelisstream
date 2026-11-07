@@ -137,7 +137,8 @@ const toLegacyMetadata = (value: unknown): Record<string, CachedMediaMetadata> =
   return result;
 };
 
-const toBooleanFlag = (value: unknown): boolean => value === true || value === 'true' || value === '1';
+const toBooleanFlag = (value: unknown): boolean =>
+  value === true || value === 1 || value === 'true' || value === '1';
 
 /**
  * Converts the v1 localStorage payload (fragmented keys, object-shaped

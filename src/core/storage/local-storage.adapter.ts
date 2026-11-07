@@ -63,22 +63,33 @@ export class LocalStorageAdapter implements IStorageAdapter {
   private load(): PelisStreamStorageSchemaV2 {
     if (!this.backend) return createDefaultState();
 
+    let raw: string | null = null;
     try {
-      const raw = this.backend.getItem(this.storageKey);
-      if (raw) {
+      raw = this.backend.getItem(this.storageKey);
+    } catch (error) {
+      console.warn('[Storage] No se pudo leer localStorage; se usa el estado por defecto.', error);
+      return createDefaultState();
+    }
+
+    if (raw) {
+      try {
         const parsed = JSON.parse(raw) as unknown;
         if (isVersionedV2(parsed)) {
           return hydrateState(parsed);
         }
+      } catch (error) {
+        console.warn('[Storage] Blob v2 corrupto; se intenta migrar el formato v1.', error);
       }
+    }
 
+    try {
       const legacy = migrateFromLegacyStorage((key) => this.backend?.getItem(key) ?? null);
       if (legacy.migrated) {
         this.persist(legacy.state);
         return legacy.state;
       }
     } catch (error) {
-      console.warn('[Storage] Estado persistido ilegible; se inicia un estado limpio.', error);
+      console.warn('[Storage] La migración desde v1 falló; se inicia un estado limpio.', error);
     }
 
     return createDefaultState();

@@ -42,8 +42,6 @@ import {
   type ProfileSettings,
 } from "../lib/types";
 import { SmartImage } from "./SmartImage";
-import { NativePlayer } from "./NativePlayer";
-import { resolveMovieStream, resolveAnimeStream, type DirectStreamResult } from "../core/extractors";
 
 export function Player() {
   const player = useUi((s) => s.player);
@@ -112,59 +110,6 @@ function PlayerView({
   const [panel, setPanel] = useState<Panel>(null);
   const [chrome, setChrome] = useState(true);
   const idle = useRef<number | undefined>(undefined);
-
-  const [directStream, setDirectStream] = useState<DirectStreamResult | null>(null);
-  const [directLoading, setDirectLoading] = useState(true);
-  const [playbackEngine, setPlaybackEngine] = useState<"native" | "iframe">("native");
-
-  useEffect(() => {
-    let active = true;
-    setDirectLoading(true);
-
-    const isAnime =
-      item.id.startsWith("anime-") ||
-      (item.genres?.some((g) => g.toLowerCase().includes("anime")) ?? false);
-
-    let promise: Promise<DirectStreamResult | null>;
-    if (isAnime) {
-      const epTarget = currentEp || episodes.find((e) => e.episode === (episode?.episode || 1));
-      const epId = epTarget?.id?.includes(":")
-        ? epTarget.id.split(":")[1]
-        : epTarget?.id || item.id.replace(/^anime-/, "");
-      promise = resolveAnimeStream(epId, false);
-    } else {
-      promise = resolveMovieStream({
-        imdbId: item.id,
-        type: item.type,
-        season: episode?.season,
-        episode: episode?.episode,
-        title: item.title,
-        year: item.year,
-      });
-    }
-
-    promise
-      .then((res) => {
-        if (!active) return;
-        if (res && res.streamUrl) {
-          setDirectStream(res);
-          setPlaybackEngine("native");
-        } else {
-          setPlaybackEngine("iframe");
-        }
-      })
-      .catch(() => {
-        if (!active) return;
-        setPlaybackEngine("iframe");
-      })
-      .finally(() => {
-        if (active) setDirectLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [item.id, item.type, item.title, item.year, item.genres, episode?.season, episode?.episode]);
 
   const providers = useMemo(() => defaultProviderManager.getAll(), []);
   const [providerId, setProviderId] = useState<string>(() => {
@@ -275,76 +220,28 @@ function PlayerView({
       className="fixed inset-0 z-[90] bg-black select-none"
     >
       {mode === "stream" ? (
-        directLoading && playbackEngine === "native" ? (
-          <div className="relative size-full flex flex-col items-center justify-center bg-black">
-            <SmartImage
-              src={item.background}
-              alt=""
-              loading="eager"
-              className="absolute inset-0 size-full object-cover opacity-30"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60" />
-            <div className="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-md">
-              <div className="size-14 animate-spin rounded-full border-[3px] border-white/15 border-t-accent" />
-              <div>
-                <h3 className="text-lg font-bold text-fg flex items-center justify-center gap-2">
-                  <Sparkles className="size-4 text-accent" />
-                  Conectando Stream Directo HLS
-                </h3>
-                <p className="text-xs text-muted mt-1">
-                  Extrayendo stream sin anuncios, popups ni captchas para Smart TV...
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPlaybackEngine("iframe")}
-                className="mt-2 text-xs font-semibold text-dim hover:text-accent underline cursor-pointer"
-              >
-                Omitir y usar servidor alternativo
-              </button>
-            </div>
-          </div>
-        ) : playbackEngine === "native" && directStream ? (
-          <NativePlayer
-            streamUrl={directStream.streamUrl}
-            subtitles={directStream.subtitles}
-            title={item.title}
-            backdrop={item.background}
-            episodeText={
-              currentEp
-                ? `T${episode?.season}:E${episode?.episode} · ${currentEp.title}`
-                : undefined
-            }
-            onNextEpisode={nextEp ? () => goToEpisode(nextEp) : undefined}
-            onSwitchToIframe={() => setPlaybackEngine("iframe")}
-            onClose={close}
-          />
-        ) : (
-          <StreamEngine
-            item={item}
-            episode={episode}
-            currentEp={currentEp}
-            nextEp={nextEp}
-            episodesCount={episodes.length}
-            chrome={chrome}
-            panel={panel}
-            setPanel={setPanel}
-            fullscreen={fullscreen}
-            toggleFullscreen={toggleFullscreen}
-            providerId={providerId}
-            onSwitchProvider={switchProvider}
-            onRotateProvider={rotateNextProvider}
-            onSwitchMode={() => {
-              setPanel(null);
-              setMode("trailer");
-            }}
-            onNextEpisode={nextEp ? () => goToEpisode(nextEp) : undefined}
-            onClose={close}
-            showChrome={showChrome}
-            hasDirectStream={Boolean(directStream)}
-            onSwitchToNative={() => setPlaybackEngine("native")}
-          />
-        )
+        <StreamEngine
+          item={item}
+          episode={episode}
+          currentEp={currentEp}
+          nextEp={nextEp}
+          episodesCount={episodes.length}
+          chrome={chrome}
+          panel={panel}
+          setPanel={setPanel}
+          fullscreen={fullscreen}
+          toggleFullscreen={toggleFullscreen}
+          providerId={providerId}
+          onSwitchProvider={switchProvider}
+          onRotateProvider={rotateNextProvider}
+          onSwitchMode={() => {
+            setPanel(null);
+            setMode("trailer");
+          }}
+          onNextEpisode={nextEp ? () => goToEpisode(nextEp) : undefined}
+          onClose={close}
+          showChrome={showChrome}
+        />
       ) : (
         <TrailerEngine
           item={item}
@@ -457,48 +354,6 @@ function PlayerView({
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
-              {/* Opción Nativa HLS sin Anuncios */}
-              {directStream && (
-                <div>
-                  <span className="mb-2 block text-xs font-bold tracking-wider text-accent uppercase">
-                    ⚡ Recomendado (Sin Anuncios)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPlaybackEngine("native");
-                      setPanel(null);
-                    }}
-                    className={cx(
-                      "flex w-full items-center justify-between rounded-2xl p-4 text-left transition hover:scale-[1.01] focus:ring-2 focus:ring-accent cursor-pointer",
-                      playbackEngine === "native"
-                        ? "bg-gradient-to-r from-accent/25 to-accent/10 text-fg ring-2 ring-accent"
-                        : "bg-white/[0.06] text-fg hover:bg-white/10",
-                    )}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-xl text-accent-ink">
-                        ⚡
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2 text-sm font-bold text-fg">
-                          <span>Stream Directo HLS Nativo</span>
-                          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                            0 Anuncios
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted">Vidstack nativo sin popups, captchas ni demoras</div>
-                      </div>
-                    </div>
-                    {playbackEngine === "native" ? (
-                      <Check className="size-5 text-accent" />
-                    ) : (
-                      <Sparkles className="size-5 text-accent" />
-                    )}
-                  </button>
-                </div>
-              )}
-
               {/* Presets de 1 Clic para TV */}
               <div>
                 <span className="mb-3 block text-xs font-bold tracking-wider text-dim uppercase">
@@ -637,8 +492,6 @@ function StreamEngine({
   onNextEpisode,
   onClose,
   showChrome,
-  hasDirectStream,
-  onSwitchToNative,
 }: {
   item: MediaItem;
   episode?: EpisodePointer;
@@ -657,8 +510,6 @@ function StreamEngine({
   onNextEpisode?: () => void;
   onClose: () => void;
   showChrome: () => void;
-  hasDirectStream?: boolean;
-  onSwitchToNative?: () => void;
 }) {
   const resolution = useMemo(
     () =>
@@ -892,19 +743,6 @@ function StreamEngine({
                 <span>Tráiler</span>
               </button>
             </div>
-          )}
-
-          {/* Native HLS Quick Switch Button */}
-          {hasDirectStream && onSwitchToNative && (
-            <button
-              type="button"
-              onClick={onSwitchToNative}
-              title="Volver a reproductor nativo HLS (0 Anuncios)"
-              className="flex h-10 items-center gap-1.5 rounded-full bg-gradient-to-r from-accent to-amber-400 px-3.5 text-xs font-bold text-accent-ink shadow-lg transition hover:scale-105 active:scale-95 refract cursor-pointer"
-            >
-              <Sparkles className="size-4" />
-              <span>⚡ HLS Nativo</span>
-            </button>
           )}
 
           {/* Audio & Server Options Trigger (Opens unified TV drawer) */}

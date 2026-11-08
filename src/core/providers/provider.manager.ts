@@ -1,5 +1,4 @@
 import { ProviderCircuitBreaker, type CircuitState } from './circuit-breaker';
-import { MultiEmbedProvider } from './multiembed.provider';
 import { PlayLatinProvider } from './playlatin.provider';
 import type {
   IVideoProviderStrategy,
@@ -124,11 +123,10 @@ export class VideoProviderManager {
 export const createDefaultProviderManager = (): VideoProviderManager =>
   new VideoProviderManager([
     new VidSrcPmProvider(),
-    new VidSrcMeProvider(),
-    new MultiEmbedProvider(),
-    new TwoEmbedProvider(),
-    new VidSrcToProvider(),
     new PlayLatinProvider(),
+    new TwoEmbedProvider(),
+    new VidSrcMeProvider(),
+    new VidSrcToProvider(),
   ]);
 
 export const defaultProviderManager = createDefaultProviderManager();

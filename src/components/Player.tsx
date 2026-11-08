@@ -602,12 +602,13 @@ function StreamEngine({
         className="fixed inset-x-0 top-0 z-30 h-14 bg-transparent"
       />
 
-      {/* Streaming Iframe (un-sandboxed so provider anti-sandbox scripts sbx.js do not trigger /sandbox.php captcha block) */}
+      {/* Streaming Iframe con aislamiento de sandbox estricto (bloquea popups, window.open y redirecciones del navegador) */}
       <iframe
         ref={iframeRef}
         key={resolution.embedUrl}
         src={resolution.embedUrl}
         title={`Reproductor PelisStream — ${item.title}`}
+        sandbox={resolution.sandboxFlags}
         allow={resolution.allowAttributes}
         referrerPolicy="origin-when-cross-origin"
         allowFullScreen

@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   reduceMotion: false,
   subtitles: "off",
   playbackRate: 1,
-  preferredProvider: "vidsrc_pm",
+  preferredProvider: "playlatin",
   theme: "ember",
 };
 
@@ -65,11 +65,11 @@ const restore = (): PersistedState => {
     if (parsed?.version !== 3 || !Array.isArray(parsed.profiles)) return seed();
     for (const p of parsed.profiles) {
       const d = parsed.data[p.id] ?? emptyData(p.kids);
-      // Migrate legacy unstable defaults (playlatin / autoembed) to ultra-fast vidsrc_pm
+      // Ensure default provider is playlatin (Alex's working server)
       const currentPreferred = d.settings?.preferredProvider;
       const preferredProvider =
-        !currentPreferred || currentPreferred === "playlatin" || currentPreferred === "autoembed"
-          ? "vidsrc_pm"
+        !currentPreferred || currentPreferred === "vidsrc_pm" || currentPreferred === "autoembed" || currentPreferred === "multiembed"
+          ? "playlatin"
           : currentPreferred;
 
       parsed.data[p.id] = {

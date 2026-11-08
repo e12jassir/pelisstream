@@ -9,13 +9,13 @@ import {
   type PlaybackResolution,
 } from './provider.interface';
 
-/** PlayLatin: Spanish/Latino audio selection. */
+/** PlayLatin: Spanish/Latino audio selection (Alex original default server). */
 export class PlayLatinProvider implements IVideoProviderStrategy {
   readonly id = 'playlatin';
-  readonly name = 'Opción 4: Español Latino y Castellano';
-  readonly shortName = 'Opción 4 (Español)';
+  readonly name = 'Opción 1: Español Latino y Castellano (PlayLatin)';
+  readonly shortName = 'Español Latino';
   readonly audioHint = 'Latino · Castellano';
-  readonly priority = 4;
+  readonly priority = 1;
 
   canHandle(request: PlaybackRequest): boolean {
     return isValidPlaybackRequest(request);
@@ -25,8 +25,8 @@ export class PlayLatinProvider implements IVideoProviderStrategy {
     const imdbId = encodeURIComponent(request.imdbId.trim());
     const embedUrl =
       request.type === 'series'
-        ? `https://playlatinsrc.co/embed/tv/${imdbId}/${seasonOf(request)}/${episodeOf(request)}`
-        : `https://playlatinsrc.co/embed/movie/${imdbId}`;
+        ? `https://playlatinsrc.co/custom/serial/${imdbId}/${seasonOf(request)}/${episodeOf(request)}`
+        : `https://playlatinsrc.co/movie/${imdbId}`;
 
     return {
       providerId: this.id,

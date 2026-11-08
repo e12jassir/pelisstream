@@ -37,7 +37,8 @@ export interface IVideoProviderStrategy {
  * - `allow-forms`: Turnstile / token submission
  * Strictly blocks: `allow-top-navigation`, `allow-popups`, `allow-modals`, `allow-downloads`.
  */
-export const SHARED_SANDBOX_FLAGS = 'allow-scripts allow-same-origin allow-forms';
+export const SHARED_SANDBOX_FLAGS =
+  'allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen';
 
 export const SHARED_ALLOW_ATTRIBUTES = 'fullscreen; autoplay; encrypted-media; picture-in-picture';
 

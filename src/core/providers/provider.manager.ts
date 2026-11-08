@@ -6,7 +6,7 @@ import type {
   PlaybackResolution,
 } from './provider.interface';
 import { TwoEmbedProvider } from './twoembed.provider';
-import { VidSrcMeProvider, VidSrcPmProvider, VidSrcToProvider } from './vidsrc.provider';
+import { VidSrcMeProvider, VidSrcToProvider } from './vidsrc.provider';
 
 export class ProviderUnavailableError extends Error {
   constructor(message: string) {
@@ -122,7 +122,6 @@ export class VideoProviderManager {
 
 export const createDefaultProviderManager = (): VideoProviderManager =>
   new VideoProviderManager([
-    new VidSrcPmProvider(),
     new PlayLatinProvider(),
     new TwoEmbedProvider(),
     new VidSrcMeProvider(),

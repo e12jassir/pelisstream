@@ -9,11 +9,13 @@ import {
   type PlaybackResolution,
 } from './provider.interface';
 
-/** PlayLatin: Spanish/Latino audio, prioritised for the target audience. */
+/** PlayLatin: Spanish/Latino audio selection. */
 export class PlayLatinProvider implements IVideoProviderStrategy {
   readonly id = 'playlatin';
-  readonly name = 'PlayLatin (Latino / ES)';
-  readonly priority = 1;
+  readonly name = 'Opción 4: Español Latino y Castellano';
+  readonly shortName = 'Opción 4 (Español)';
+  readonly audioHint = 'Latino · Castellano';
+  readonly priority = 4;
 
   canHandle(request: PlaybackRequest): boolean {
     return isValidPlaybackRequest(request);
@@ -23,12 +25,13 @@ export class PlayLatinProvider implements IVideoProviderStrategy {
     const imdbId = encodeURIComponent(request.imdbId.trim());
     const embedUrl =
       request.type === 'series'
-        ? `https://playlatinsrc.co/custom/serial/${imdbId}/${seasonOf(request)}/${episodeOf(request)}`
-        : `https://playlatinsrc.co/movie/${imdbId}`;
+        ? `https://playlatinsrc.co/embed/tv/${imdbId}/${seasonOf(request)}/${episodeOf(request)}`
+        : `https://playlatinsrc.co/embed/movie/${imdbId}`;
 
     return {
       providerId: this.id,
       providerName: this.name,
+      audioHint: this.audioHint,
       embedUrl,
       sandboxFlags: SHARED_SANDBOX_FLAGS,
       allowAttributes: SHARED_ALLOW_ATTRIBUTES,

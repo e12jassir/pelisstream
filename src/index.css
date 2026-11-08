@@ -1,0 +1,242 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gloock&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Satisfy&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "Gloock", "Iowan Old Style", Georgia, serif;
+  --font-condensed: "Bebas Neue", "Impact", sans-serif;
+  --font-script: "Satisfy", cursive;
+
+  /* Runtime-themable palette (see src/lib/themes.ts). */
+  --color-ink: #090807;
+  --color-raised: #15110f;
+  --color-surface: #1c1714;
+  --color-surface-hi: #29221d;
+  --color-fg: #f5ede2;
+  --color-muted: #b8ab9b;
+  --color-dim: #85786a;
+  --color-accent: #f0a640;
+  --color-accent-hi: #ffc372;
+  --color-accent-ink: #1a0f02;
+  --color-line: color-mix(in oklab, var(--color-fg) 9%, transparent);
+  --color-line-hi: color-mix(in oklab, var(--color-fg) 17%, transparent);
+  --color-match: #46d369;
+  --color-danger: #f87171;
+
+  /* Motion: physical-mass curves only. */
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-kenburns: kenburns 24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-drift: drift 18s cubic-bezier(0.32, 0.72, 0, 1) infinite alternate;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes kenburns {
+    from {
+      transform: scale(1.12) translate3d(1.5%, 1%, 0);
+    }
+    to {
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+  }
+  @keyframes drift {
+    from {
+      transform: scale(1.08) translate3d(-2%, 0, 0);
+    }
+    to {
+      transform: scale(1.16) translate3d(2%, -1.5%, 0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --ambient: color-mix(in oklab, var(--color-accent) 16%, transparent);
+  }
+  html {
+    background: var(--color-ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+  button {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-fg) 14%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* ---------------------------- Typography ---------------------------- */
+
+@utility eyebrow {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.038em;
+  line-height: 0.96;
+}
+
+@utility numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+/* -------------------- Double-Bezel (Doppelrand) --------------------- */
+/* Outer shell: hairline + faint fill. Core: concentric radius + top refraction. */
+
+@utility bezel {
+  --bz-r: 24px;
+  --bz-p: 5px;
+  border-radius: var(--bz-r);
+  padding: var(--bz-p);
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+@utility bezel-core {
+  border-radius: calc(var(--bz-r, 24px) - var(--bz-p, 5px) - 1px);
+  background: var(--color-raised);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 0 0 1px rgb(255 255 255 / 0.03);
+  overflow: clip;
+  position: relative;
+}
+
+@utility glass {
+  background: color-mix(in oklab, var(--color-raised) 62%, transparent);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+}
+
+@utility refract {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility skeleton {
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--color-fg) 4%, transparent) 30%,
+    color-mix(in oklab, var(--color-fg) 9%, transparent) 50%,
+    color-mix(in oklab, var(--color-fg) 4%, transparent) 70%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Rail track: vertical breathing room so scaled cards & cast shadows never clip. */
+@utility rail-track {
+  padding-top: 2.8rem;
+  padding-bottom: 3.4rem;
+  margin-top: -1.6rem;
+  margin-bottom: -1.8rem;
+}
+
+/* Card lift: transform + opacity only, driven by the spring curve. */
+@utility lift {
+  transform: translate3d(0, 0, 0);
+  transition: transform 520ms var(--ease-spring);
+  will-change: transform;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 26px 50px -18px rgb(0 0 0 / 0.9);
+    opacity: 0;
+    transition: opacity 520ms var(--ease-spring);
+    pointer-events: none;
+    z-index: -1;
+  }
+  &:hover {
+    transform: translate3d(0, -6px, 0) scale(1.035);
+  }
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Cover-fit a 16:9 YouTube iframe and push its chrome out of frame. */
+.yt-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  pointer-events: none;
+}
+.yt-cover {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100cqw, 177.78cqh);
+  height: max(100cqh, 56.25cqw);
+  transform: translate(-50%, -50%) scale(1.2);
+}
+.yt-cover iframe,
+.yt-cover > div {
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-kenburns,
+  .animate-drift {
+    animation: none;
+  }
+}

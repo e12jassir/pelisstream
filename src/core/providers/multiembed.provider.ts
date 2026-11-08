@@ -11,8 +11,10 @@ import {
 
 export class MultiEmbedProvider implements IVideoProviderStrategy {
   readonly id = 'multiembed';
-  readonly name = 'MultiEmbed';
-  readonly priority = 4;
+  readonly name = 'Opción 3: Multi-Servidor (VIP Auto-Failover)';
+  readonly shortName = 'Opción 3';
+  readonly audioHint = 'Multi-Servidor VIP';
+  readonly priority = 3;
 
   canHandle(request: PlaybackRequest): boolean {
     return isValidPlaybackRequest(request);
@@ -28,6 +30,7 @@ export class MultiEmbedProvider implements IVideoProviderStrategy {
     return {
       providerId: this.id,
       providerName: this.name,
+      audioHint: this.audioHint,
       embedUrl,
       sandboxFlags: SHARED_SANDBOX_FLAGS,
       allowAttributes: SHARED_ALLOW_ATTRIBUTES,

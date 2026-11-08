@@ -1,3 +1,4 @@
+import { ProviderCircuitBreaker, type CircuitState } from './circuit-breaker';
 import { MultiEmbedProvider } from './multiembed.provider';
 import { PlayLatinProvider } from './playlatin.provider';
 import type {
@@ -5,7 +6,8 @@ import type {
   PlaybackRequest,
   PlaybackResolution,
 } from './provider.interface';
-import { VidSrcMeProvider, VidSrcToProvider } from './vidsrc.provider';
+import { TwoEmbedProvider } from './twoembed.provider';
+import { VidSrcMeProvider, VidSrcPmProvider, VidSrcToProvider } from './vidsrc.provider';
 
 export class ProviderUnavailableError extends Error {
   constructor(message: string) {
@@ -15,11 +17,13 @@ export class ProviderUnavailableError extends Error {
 }
 
 /**
- * Strategy registry. Consumers never build provider URLs directly; they ask
- * the manager, which applies priority and fallback consistently.
+ * Resilient Strategy Registry with per-provider Circuit Breakers.
+ * Consumers never build provider URLs directly; they ask the manager,
+ * which applies priority and circuit-breaker health consistently.
  */
 export class VideoProviderManager {
   private readonly strategies = new Map<string, IVideoProviderStrategy>();
+  private readonly breakers = new Map<string, ProviderCircuitBreaker>();
 
   constructor(strategies: readonly IVideoProviderStrategy[] = []) {
     for (const strategy of strategies) {
@@ -32,6 +36,7 @@ export class VideoProviderManager {
       throw new Error(`Proveedor de video duplicado: ${strategy.id}`);
     }
     this.strategies.set(strategy.id, strategy);
+    this.breakers.set(strategy.id, new ProviderCircuitBreaker(strategy.id));
   }
 
   getAll(): IVideoProviderStrategy[] {
@@ -40,23 +45,68 @@ export class VideoProviderManager {
     );
   }
 
-  get(providerId: string): IVideoProviderStrategy | undefined {
-    return this.strategies.get(providerId);
+  getAvailable(): IVideoProviderStrategy[] {
+    const all = this.getAll();
+    const healthy = all.filter((s) => this.breakers.get(s.id)?.isAvailable() ?? true);
+    return healthy.length > 0 ? healthy : all;
   }
 
-  getDefault(): IVideoProviderStrategy | undefined {
-    return this.getAll()[0];
+  get(id: string): IVideoProviderStrategy | undefined {
+    return this.strategies.get(id);
+  }
+
+  getDefault(): IVideoProviderStrategy {
+    return this.getAvailable()[0] ?? this.getAll()[0];
+  }
+
+  getCircuitState(providerId: string): CircuitState {
+    return this.breakers.get(providerId)?.getState() ?? 'CLOSED';
+  }
+
+  reportSuccess(providerId: string): void {
+    this.breakers.get(providerId)?.recordSuccess();
+  }
+
+  reportFailure(providerId: string): void {
+    this.breakers.get(providerId)?.recordFailure();
+  }
+
+  getNextProviderId(currentProviderId: string): string {
+    const available = this.getAvailable();
+    const all = available.length > 1 ? available : this.getAll();
+    const idx = all.findIndex((s) => s.id === currentProviderId);
+    const next = all[(idx + 1) % all.length];
+    return next ? next.id : currentProviderId;
   }
 
   resolvePlayback(
     preferredProviderId: string | undefined,
     request: PlaybackRequest,
   ): PlaybackResolution {
-    const preferred = preferredProviderId ? this.strategies.get(preferredProviderId) : undefined;
+    const available = this.getAvailable();
+    const all = this.getAll();
     const candidates: IVideoProviderStrategy[] = [];
-    if (preferred) candidates.push(preferred);
-    for (const strategy of this.getAll()) {
-      if (strategy !== preferred) candidates.push(strategy);
+
+    // Prioritize preferred provider only if it is currently healthy
+    if (preferredProviderId) {
+      const preferred = available.find((s) => s.id === preferredProviderId);
+      if (preferred) {
+        candidates.push(preferred);
+      }
+    }
+
+    // Add remaining healthy strategies in priority order
+    for (const strategy of available) {
+      if (!candidates.includes(strategy)) {
+        candidates.push(strategy);
+      }
+    }
+
+    // Add remaining strategies as last resort (e.g., if all are circuit-broken)
+    for (const strategy of all) {
+      if (!candidates.includes(strategy)) {
+        candidates.push(strategy);
+      }
     }
 
     for (const strategy of candidates) {
@@ -73,8 +123,12 @@ export class VideoProviderManager {
 
 export const createDefaultProviderManager = (): VideoProviderManager =>
   new VideoProviderManager([
-    new PlayLatinProvider(),
-    new VidSrcToProvider(),
+    new VidSrcPmProvider(),
     new VidSrcMeProvider(),
     new MultiEmbedProvider(),
+    new TwoEmbedProvider(),
+    new VidSrcToProvider(),
+    new PlayLatinProvider(),
   ]);
+
+export const defaultProviderManager = createDefaultProviderManager();

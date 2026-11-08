@@ -4,6 +4,8 @@
  */
 export type MediaType = 'movie' | 'series';
 
+export type StreamingPlatformId = 'nfx' | 'hbm' | 'atp' | 'dnp' | 'amp';
+
 export interface BaseMediaItem {
   /** IMDb identifier, e.g. `tt0111161`. */
   readonly id: string;
@@ -11,11 +13,17 @@ export interface BaseMediaItem {
   readonly title: string;
   readonly poster: string;
   readonly background?: string;
+  readonly logo?: string;
   readonly year: number | string;
   readonly imdbRating: number;
   readonly genres: readonly string[];
   readonly synopsis: string;
   readonly runtimeMinutes?: number;
+  readonly cast?: readonly string[];
+  readonly director?: readonly string[];
+  readonly awards?: string;
+  readonly trailerYtId?: string;
+  readonly platformHub?: StreamingPlatformId;
 }
 
 export interface MovieItem extends BaseMediaItem {
@@ -47,6 +55,22 @@ export const formatRuntime = (minutes: number | undefined): string => {
   if (hours <= 0) return `${rest} min`;
   if (rest === 0) return `${hours} h`;
   return `${hours} h ${rest} min`;
+};
+
+export const deriveMaturityRating = (item: MediaItem): string => {
+  const genres = item.genres.join(' ');
+  if (/Horror|Crime|Thriller/i.test(genres)) return '16+';
+  if (/Animation|Family/i.test(genres)) return '7+';
+  if (/Action|Sci-Fi|Drama/i.test(genres)) return '13+';
+  return '13+';
+};
+
+export const PLATFORM_NAMES: Record<StreamingPlatformId, string> = {
+  nfx: 'NETFLIX',
+  hbm: 'HBO MAX',
+  atp: 'APPLE TV+',
+  dnp: 'DISNEY+',
+  amp: 'PRIME VIDEO',
 };
 
 export const mediaLabel = (item: MediaItem): string => `${item.title} (${displayYear(item)})`;

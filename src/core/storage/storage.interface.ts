@@ -1,7 +1,85 @@
-import type { MediaType } from '../domain/media';
+import type { MediaType, StreamingPlatformId } from '../domain/media';
 
 export const CURRENT_STORAGE_VERSION = 2 as const;
 export type StorageVersion = typeof CURRENT_STORAGE_VERSION;
+
+export type ThemeId = 'apple' | 'cinema' | 'netflix' | 'max' | 'disney';
+
+export type AvatarId =
+  | 'astronaut'
+  | 'samurai'
+  | 'starlight'
+  | 'director'
+  | 'cyber-wolf'
+  | 'valkyrie'
+  | 'noir'
+  | 'arcade';
+
+export interface UserProfile {
+  readonly id: string;
+  readonly name: string;
+  readonly roleLabel: string;
+  readonly avatarId?: AvatarId;
+  readonly avatarColor: string;
+  readonly avatarGradient: string;
+  readonly initial: string;
+  readonly isKids?: boolean;
+  readonly pin?: string;
+  readonly preferredTheme?: ThemeId;
+}
+
+export interface ProfileDataSnapshot {
+  favorites: string[];
+  watchLater: string[];
+  seenMedia: Record<string, number>;
+  ratings: Record<string, number>;
+  progress: Record<string, StoredProgressEntry>;
+  watchedEpisodes: Record<string, boolean>;
+}
+
+export const DEFAULT_PROFILES: readonly UserProfile[] = [
+  {
+    id: 'esteban',
+    name: 'Esteban',
+    roleLabel: '4K Dolby Vision · Director',
+    avatarId: 'samurai',
+    avatarColor: '#38bdf8',
+    avatarGradient: 'linear-gradient(135deg, #0ea5e9 0%, #1e1b4b 100%)',
+    initial: 'E',
+    preferredTheme: 'apple',
+  },
+  {
+    id: 'gaby',
+    name: 'Gaby',
+    roleLabel: 'Disney+ & Animación',
+    avatarId: 'starlight',
+    avatarColor: '#f472b6',
+    avatarGradient: 'linear-gradient(135deg, #ec4899 0%, #4c1d95 100%)',
+    initial: 'G',
+    isKids: true,
+    preferredTheme: 'disney',
+  },
+  {
+    id: 'papa',
+    name: 'Papá',
+    roleLabel: 'Acción IMAX & Clásicos',
+    avatarId: 'noir',
+    avatarColor: '#e50914',
+    avatarGradient: 'linear-gradient(135deg, #dc2626 0%, #450a0a 100%)',
+    initial: 'P',
+    preferredTheme: 'netflix',
+  },
+  {
+    id: 'cine-arte',
+    name: 'Sala VIP',
+    roleLabel: 'HBO Prestige & A24',
+    avatarId: 'astronaut',
+    avatarColor: '#a855f7',
+    avatarGradient: 'linear-gradient(135deg, #7c3aed 0%, #0f172a 100%)',
+    initial: 'V',
+    preferredTheme: 'max',
+  },
+];
 
 export interface CachedMediaMetadata {
   title: string;
@@ -11,6 +89,12 @@ export interface CachedMediaMetadata {
   genres: string[];
   runtimeMinutes?: number;
   lastUpdated: number;
+  /** Optional so entries written by older versions stay valid. */
+  type?: MediaType;
+  background?: string;
+  logo?: string;
+  synopsis?: string;
+  platformHub?: StreamingPlatformId;
 }
 
 export interface StoredProgressEntry {
@@ -18,6 +102,7 @@ export interface StoredProgressEntry {
   timestamp: number;
   season?: number;
   episode?: number;
+  progressPercent?: number;
 }
 
 /**
@@ -35,6 +120,10 @@ export interface PelisStreamStorageSchemaV2 {
   preferredServerId: string;
   hideWatchedInCatalog: boolean;
   cachedMetadata: Record<string, CachedMediaMetadata>;
+  activeProfileId: string;
+  themeId: ThemeId;
+  profiles: UserProfile[];
+  profileBuckets: Record<string, ProfileDataSnapshot>;
 }
 
 export type StorageKey = keyof PelisStreamStorageSchemaV2;
@@ -49,6 +138,15 @@ export interface IStorageAdapter {
   subscribe(listener: (state: PelisStreamStorageSchemaV2) => void): () => void;
 }
 
+export const createEmptyProfileBucket = (): ProfileDataSnapshot => ({
+  favorites: [],
+  watchLater: [],
+  seenMedia: {},
+  ratings: {},
+  progress: {},
+  watchedEpisodes: {},
+});
+
 export const createDefaultState = (): PelisStreamStorageSchemaV2 => ({
   version: CURRENT_STORAGE_VERSION,
   favorites: [],
@@ -60,6 +158,10 @@ export const createDefaultState = (): PelisStreamStorageSchemaV2 => ({
   preferredServerId: 'playlatin',
   hideWatchedInCatalog: false,
   cachedMetadata: {},
+  activeProfileId: 'esteban',
+  themeId: 'apple',
+  profiles: [...DEFAULT_PROFILES],
+  profileBuckets: {},
 });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -102,15 +204,25 @@ const toProgressRecord = (value: unknown): Record<string, StoredProgressEntry> =
     if ((type !== 'movie' && type !== 'series') || timestamp === null) continue;
     const season = toFiniteNumber(entry['season']);
     const episode = toFiniteNumber(entry['episode']);
+    const progressPercent = toFiniteNumber(entry['progressPercent']);
     result[key] = {
       type,
       timestamp,
       ...(season !== null && season > 0 ? { season } : {}),
       ...(episode !== null && episode > 0 ? { episode } : {}),
+      ...(progressPercent !== null && progressPercent > 0 ? { progressPercent } : {}),
     };
   }
   return result;
 };
+
+const VALID_PLATFORMS: ReadonlySet<StreamingPlatformId> = new Set([
+  'nfx',
+  'hbm',
+  'atp',
+  'dnp',
+  'amp',
+]);
 
 const toMetadataRecord = (value: unknown): Record<string, CachedMediaMetadata> => {
   const result: Record<string, CachedMediaMetadata> = {};
@@ -122,6 +234,11 @@ const toMetadataRecord = (value: unknown): Record<string, CachedMediaMetadata> =
     if (typeof title !== 'string' || typeof poster !== 'string') continue;
     const year = entry['year'];
     const runtime = toFiniteNumber(entry['runtimeMinutes']);
+    const type = entry['type'];
+    const background = entry['background'];
+    const logo = entry['logo'];
+    const synopsis = entry['synopsis'];
+    const platformHub = entry['platformHub'];
     result[key] = {
       title,
       poster,
@@ -130,6 +247,98 @@ const toMetadataRecord = (value: unknown): Record<string, CachedMediaMetadata> =
       genres: toStringArray(entry['genres']),
       lastUpdated: toFiniteNumber(entry['lastUpdated']) ?? 0,
       ...(runtime !== null ? { runtimeMinutes: Math.round(runtime) } : {}),
+      ...(type === 'movie' || type === 'series' ? { type } : {}),
+      ...(typeof background === 'string' ? { background } : {}),
+      ...(typeof logo === 'string' ? { logo } : {}),
+      ...(typeof synopsis === 'string' ? { synopsis } : {}),
+      ...(typeof platformHub === 'string' && VALID_PLATFORMS.has(platformHub as StreamingPlatformId)
+        ? { platformHub: platformHub as StreamingPlatformId }
+        : {}),
+    };
+  }
+  return result;
+};
+
+const VALID_THEMES: ReadonlySet<ThemeId> = new Set(['apple', 'cinema', 'netflix', 'max', 'disney']);
+const VALID_AVATARS: ReadonlySet<AvatarId> = new Set([
+  'astronaut',
+  'samurai',
+  'starlight',
+  'director',
+  'cyber-wolf',
+  'valkyrie',
+  'noir',
+  'arcade',
+]);
+
+const toThemeId = (value: unknown): ThemeId =>
+  typeof value === 'string' && VALID_THEMES.has(value as ThemeId) ? (value as ThemeId) : 'apple';
+
+const toProfilesArray = (value: unknown): UserProfile[] => {
+  if (!Array.isArray(value) || value.length === 0) return [...DEFAULT_PROFILES];
+  const parsed: UserProfile[] = [];
+  for (const raw of value) {
+    if (!isRecord(raw)) continue;
+    const id = typeof raw['id'] === 'string' ? raw['id'].trim() : '';
+    const name = typeof raw['name'] === 'string' ? raw['name'].trim() : '';
+    if (!id || !name) continue;
+    const roleLabel =
+      typeof raw['roleLabel'] === 'string' && raw['roleLabel'].trim()
+        ? raw['roleLabel'].trim()
+        : '4K Dolby Vision';
+    const avatarIdRaw = raw['avatarId'];
+    const defaultMatch = DEFAULT_PROFILES.find((p) => p.id === id);
+    const avatarId: AvatarId =
+      typeof avatarIdRaw === 'string' && VALID_AVATARS.has(avatarIdRaw as AvatarId)
+        ? (avatarIdRaw as AvatarId)
+        : (defaultMatch?.avatarId ?? 'astronaut');
+    const avatarColor =
+      typeof raw['avatarColor'] === 'string' && raw['avatarColor']
+        ? raw['avatarColor']
+        : (defaultMatch?.avatarColor ?? '#38bdf8');
+    const avatarGradient =
+      typeof raw['avatarGradient'] === 'string' && raw['avatarGradient']
+        ? raw['avatarGradient']
+        : (defaultMatch?.avatarGradient ?? 'linear-gradient(135deg, #0ea5e9 0%, #1e1b4b 100%)');
+    const initial =
+      typeof raw['initial'] === 'string' && raw['initial']
+        ? raw['initial'].slice(0, 1).toUpperCase()
+        : name.slice(0, 1).toUpperCase();
+    const isKids = raw['isKids'] === true;
+    const pin = typeof raw['pin'] === 'string' && /^\d{4}$/.test(raw['pin']) ? raw['pin'] : undefined;
+    const preferredTheme =
+      typeof raw['preferredTheme'] === 'string' && VALID_THEMES.has(raw['preferredTheme'] as ThemeId)
+        ? (raw['preferredTheme'] as ThemeId)
+        : defaultMatch?.preferredTheme;
+
+    parsed.push({
+      id,
+      name,
+      roleLabel,
+      avatarId,
+      avatarColor,
+      avatarGradient,
+      initial,
+      ...(isKids ? { isKids: true } : {}),
+      ...(pin ? { pin } : {}),
+      ...(preferredTheme ? { preferredTheme } : {}),
+    });
+  }
+  return parsed.length > 0 ? parsed : [...DEFAULT_PROFILES];
+};
+
+const toProfileBuckets = (value: unknown): Record<string, ProfileDataSnapshot> => {
+  const result: Record<string, ProfileDataSnapshot> = {};
+  if (!isRecord(value)) return result;
+  for (const [profileId, rawBucket] of Object.entries(value)) {
+    if (!isRecord(rawBucket)) continue;
+    result[profileId] = {
+      favorites: toStringArray(rawBucket['favorites']),
+      watchLater: toStringArray(rawBucket['watchLater']),
+      seenMedia: toStringNumberRecord(rawBucket['seenMedia']),
+      ratings: toStringNumberRecord(rawBucket['ratings']),
+      progress: toProgressRecord(rawBucket['progress']),
+      watchedEpisodes: toBooleanRecord(rawBucket['watchedEpisodes']),
     };
   }
   return result;
@@ -142,6 +351,12 @@ export const hydrateState = (raw: unknown): PelisStreamStorageSchemaV2 => {
 
   const preferredServerId = raw['preferredServerId'];
   const hideWatched = raw['hideWatchedInCatalog'];
+  const profiles = toProfilesArray(raw['profiles']);
+  const activeProfileId =
+    typeof raw['activeProfileId'] === 'string' &&
+    profiles.some((p) => p.id === raw['activeProfileId'])
+      ? raw['activeProfileId']
+      : (profiles[0]?.id ?? defaults.activeProfileId);
 
   return {
     version: CURRENT_STORAGE_VERSION,
@@ -157,5 +372,9 @@ export const hydrateState = (raw: unknown): PelisStreamStorageSchemaV2 => {
         : defaults.preferredServerId,
     hideWatchedInCatalog: hideWatched === true,
     cachedMetadata: toMetadataRecord(raw['cachedMetadata']),
+    activeProfileId,
+    themeId: toThemeId(raw['themeId']),
+    profiles,
+    profileBuckets: toProfileBuckets(raw['profileBuckets']),
   };
 };

@@ -4,4 +4,9 @@ dist-packages/
 .atl/
 .DS_Store
 *.log
+repomix-*
+PLAN*.md
+PROPUESTAS_*.md
+.vercel/
+
 

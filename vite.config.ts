@@ -1,12 +1,11 @@
 import { defineConfig, type Plugin } from 'vite';
-import legacy from '@vitejs/plugin-legacy';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
 
 /**
- * webOS 3-6 and Tizen TV load packaged apps from `file:///`. Chromium treats a
- * `file://` document as an opaque origin, so the `crossorigin` attribute Vite
- * adds to generated `<script>`/`<link>` tags makes those classic resources
- * fail a CORS fetch and the TV shows a blank screen. Same-origin attributes
- * are redundant anyway: removing them only relaxes the fetch mode.
+ * webOS and Tizen TV load packaged apps from `file:///`. Removing `crossorigin`
+ * prevents opaque-origin CORS failures when packaged for Smart TVs.
  */
 const stripCrossOriginForTv = (): Plugin => ({
   name: 'pelisstream:strip-crossorigin',
@@ -18,8 +17,17 @@ const stripCrossOriginForTv = (): Plugin => ({
 });
 
 export default defineConfig({
-  // Relative base is mandatory for webOS/Tizen packages served from file://.
   base: './',
+  plugins: [
+    react(),
+    tailwindcss(),
+    stripCrossOriginForTv(),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     host: true,
     port: 5173,
@@ -31,24 +39,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    target: 'es2015',
-    cssTarget: 'chrome61',
-    minify: 'terser',
     sourcemap: false,
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        passes: 2,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-motion': ['motion'],
+          'vendor-icons': ['lucide-react'],
+        },
       },
     },
   },
-  plugins: [
-    legacy({
-      targets: ['chrome >= 69', 'safari >= 11'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
-      renderLegacyChunks: true,
-      modernPolyfills: false,
-    }),
-    stripCrossOriginForTv(),
-  ],
 });

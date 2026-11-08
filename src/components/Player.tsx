@@ -573,6 +573,23 @@ function StreamEngine({
     return () => window.clearInterval(ticker);
   }, [item, episode]);
 
+  // Active Shield: Intercept rogue popups & block window.open ad traps
+  useEffect(() => {
+    const originalOpen = window.open;
+    try {
+      window.open = () => null;
+    } catch {
+      /* window.open might be read-only in strict environments */
+    }
+    return () => {
+      try {
+        window.open = originalOpen;
+      } catch {
+        /* ignore */
+      }
+    };
+  }, []);
+
   const visibleChrome = chrome || panel !== null || !iframeLoaded || slowWarning;
   const activeStrategy = defaultProviderManager.get(resolution.providerId);
 
@@ -585,12 +602,13 @@ function StreamEngine({
         className="fixed inset-x-0 top-0 z-30 h-14 bg-transparent"
       />
 
-      {/* Streaming Iframe (no sandbox attribute so anti-sandbox scripts sbx.js / asb.html do not block playback) */}
+      {/* Streaming Iframe with strict armored sandbox (blocks popups, top redirects, and ad injectors) */}
       <iframe
         ref={iframeRef}
         key={resolution.embedUrl}
         src={resolution.embedUrl}
         title={`Reproductor PelisStream — ${item.title}`}
+        sandbox={resolution.sandboxFlags}
         allow={resolution.allowAttributes}
         referrerPolicy="origin-when-cross-origin"
         allowFullScreen

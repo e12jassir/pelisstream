@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" 
+        xmlns:tizen="http://tizen.org/ns/widgets" 
+        id="http://pelisstream.app/PelisStream" 
+        version="1.0.5" 
+        viewmodes="fullscreen">
+    <tizen:application id="PelisStrem.PelisStream" exec="index.html" screen-orientation="landscape" required_version="3.0"/>
+    <name>PelisStream</name>
+    <description>PelisStream - Reproductor y Catalogo Multimedia para Smart TV</description>
+    <author href="https://github.com/Alexjcs24/pelisstream">Alexjcs24</author>
+    <icon src="icon.png"/>
+    <content src="index.html"/>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+    <tizen:setting screen-orientation="landscape" context-menu="enable" background-support="disable" encryption="disable" install-location="auto"/>
+    <tizen:profile name="tv"/>
+</widget>

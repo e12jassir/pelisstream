@@ -10,3 +10,7 @@ PROPUESTAS_*.md
 .vercel/
 
 
+
+# TV Application packages
+public/*.apk
+public/*.wgt

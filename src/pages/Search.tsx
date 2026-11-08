@@ -11,8 +11,9 @@ import type { MediaItem } from "../lib/types";
 import { HUBS, HubTile, MediaGrid, Segmented } from "../components/PageParts";
 import { GUTTER } from "../components/Rail";
 import { SmartImage } from "../components/SmartImage";
+import { searchAnime } from "../core/extractors/anime.extractor";
 
-type Filter = "all" | "movie" | "series";
+type Filter = "all" | "movie" | "series" | "anime";
 
 export function Search({ initial }: { initial?: string }) {
   const [query, setQuery] = useState(initial ?? "");
@@ -40,19 +41,53 @@ export function Search({ initial }: { initial?: string }) {
     }
     let alive = true;
     setLoading(true);
-    searchAll(debounced).then((items) => {
+
+    Promise.all([
+      searchAll(debounced).catch(() => []),
+      searchAnime(debounced).catch(() => []),
+    ]).then(([cinemetaItems, animeResults]) => {
       if (!alive) return;
-      setResults({ q: debounced, items });
+
+      const animeItems: MediaItem[] = (animeResults || []).map((a) => ({
+        id: `anime-${a.id}`,
+        type: "series",
+        title: a.title,
+        poster: a.poster || "",
+        background: a.poster || "",
+        logo: "",
+        year: "Anime",
+        releaseInfo: "HiAnime Stream",
+        imdbRating: 8.8,
+        genres: ["Anime", "Animación", "Japón"],
+        synopsis: `Serie Anime: ${a.title}. Stream HLS extraído directamente vía motor ani-cli / HiAnime sin anuncios.`,
+        cast: [],
+        director: [],
+        writer: [],
+        trailers: [],
+      }));
+
+      const combined = [...cinemetaItems, ...animeItems];
+      setResults({ q: debounced, items: combined });
       setLoading(false);
-      if (items.length) actions.addRecentSearch(debounced);
+      if (combined.length) actions.addRecentSearch(debounced);
     });
+
     return () => {
       alive = false;
     };
   }, [debounced]);
 
   const visible = useMemo(
-    () => kidsFilter(results.items).filter((i) => filter === "all" || i.type === filter),
+    () =>
+      kidsFilter(results.items).filter((i) => {
+        if (filter === "all") return true;
+        if (filter === "anime") {
+          return i.id.startsWith("anime-") || i.genres?.some((g) => g.toLowerCase().includes("anime"));
+        }
+        if (filter === "movie") return i.type === "movie" && !i.id.startsWith("anime-");
+        if (filter === "series") return i.type === "series" && !i.id.startsWith("anime-");
+        return true;
+      }),
     [results.items, filter, kidsFilter],
   );
   const searching = debounced.length >= 2;
@@ -117,6 +152,7 @@ export function Search({ initial }: { initial?: string }) {
                   { id: "all", label: "Todo" },
                   { id: "movie", label: "Películas" },
                   { id: "series", label: "Series" },
+                  { id: "anime", label: "Anime" },
                 ]}
               />
             </div>

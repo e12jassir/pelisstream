@@ -30,11 +30,12 @@ export function ProfileGate() {
   const showAuthWelcome = !cloud.token && !cloud.guestMode && profiles.length === 0;
 
   const enter = (p: Profile) => {
+    if (entering) return;
     setEntering(p.id);
     window.setTimeout(() => {
       actions.selectProfile(p.id);
       window.scrollTo(0, 0);
-    }, 650);
+    }, 220);
   };
 
   const pick = (p: Profile) => {

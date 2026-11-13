@@ -100,7 +100,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion={settings.reduceMotion ? "always" : "user"}>
-      <AnimatePresence>{!profile && <ProfileGate key="gate" />}</AnimatePresence>
+      {!profile && <ProfileGate />}
 
       {profile && (
         <div key={profile.id} className="min-h-screen bg-ink">

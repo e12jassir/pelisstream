@@ -72,7 +72,14 @@ export function TopBar() {
     };
   }, [debounced, kidsFilter]);
 
-  if (route.name === "search") return null;
+  if (
+    route.name === "search" ||
+    route.name === "list" ||
+    route.name === "me" ||
+    route.name === "settings"
+  ) {
+    return null;
+  }
 
   const showDropdown = open && value.trim().length >= 2;
 

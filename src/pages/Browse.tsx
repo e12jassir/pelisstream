@@ -94,10 +94,10 @@ export function Browse({ type }: { type: MediaType }) {
   return (
     <div className="pb-28">
       {/* Editorial filter bar */}
-      <div className={cx("relative z-30 mt-[76px] md:sticky md:top-0 md:mt-0")}>
+      <div className={cx("relative z-10 mt-[76px] md:sticky md:top-0 md:z-30 md:mt-0")}>
         <div
           className={cx(
-            "glass absolute inset-0 transition-opacity duration-500 refract",
+            "glass absolute inset-0 hidden transition-opacity duration-500 refract md:block",
             scrolled || view === "grid" ? "opacity-100" : "opacity-0",
           )}
         />

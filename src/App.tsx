@@ -130,14 +130,45 @@ export default function App() {
             <footer
               className={`border-t border-line pt-10 pb-28 text-sm text-dim md:pb-12 ${GUTTER}`}
             >
-              <div className="mb-3 flex items-center gap-2.5">
-                <BrandMark className="size-6" />
-                <Wordmark className="text-lg text-fg" />
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="mb-2.5 flex items-center gap-2.5">
+                    <BrandMark className="size-6" />
+                    <Wordmark className="text-lg text-fg" />
+                  </div>
+                  <p className="max-w-md text-xs leading-relaxed text-muted/80 sm:text-sm">
+                    Tu cine en casa, sin ruido ni fricción. Películas, series y tu lista listos en
+                    cualquier pantalla.
+                  </p>
+                </div>
+                <nav
+                  aria-label="Enlaces del pie de página"
+                  className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-muted"
+                >
+                  {(
+                    [
+                      ["home", "Inicio"],
+                      ["movies", "Películas"],
+                      ["series", "Series"],
+                      ["new", "Novedades"],
+                      ["list", "Mi lista"],
+                    ] as const
+                  ).map(([name, text]) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => navigate({ name })}
+                      className="transition hover:text-fg"
+                    >
+                      {text}
+                    </button>
+                  ))}
+                </nav>
               </div>
-              <p className="max-w-2xl leading-relaxed">
-                Catálogo y metadatos de Cinemeta, imágenes de Metahub y tráileres de YouTube. Tus
-                perfiles, listas, calificaciones e historial se guardan en este navegador.
-              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-5 text-[11px] text-dim/80">
+                <span>PelisStream · Streaming de alta fidelidad</span>
+                <span>Web · Android · Smart TV</span>
+              </div>
             </footer>
           </main>
           <HoverPreview />

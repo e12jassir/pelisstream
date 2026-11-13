@@ -260,9 +260,9 @@ export function MobileNav() {
         type="button"
         onClick={() => actions.signOut()}
         aria-label={`Perfil: ${profile.name} (cambiar)`}
-        className="glass fixed top-4 right-4 z-40 flex size-12 items-center justify-center rounded-full transition active:scale-95 md:hidden"
+        className="fixed top-4 right-4 z-40 flex size-12 items-center justify-center transition active:scale-95 md:hidden"
       >
-        <Avatar index={profile.avatar} className="size-8 shrink-0" />
+        <Avatar index={profile.avatar} className="size-9 shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.55)]" />
       </button>
 
       <nav className="glass fixed inset-x-3 bottom-3 z-40 flex justify-around rounded-2xl px-2 py-2 md:hidden">

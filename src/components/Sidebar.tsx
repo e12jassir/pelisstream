@@ -97,7 +97,7 @@ function RailItem({
           {badge > 9 ? "9+" : badge}
         </span>
       )}
-      <span className="glass-menu pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100">
+      <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100">
         {item.label}
       </span>
     </a>
@@ -150,7 +150,7 @@ export function Sidebar() {
         >
           <Avatar index={profile.avatar} className="size-8 shrink-0" />
           {!switcher && (
-            <span className="glass-menu pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
+            <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
               {profile.name}
             </span>
           )}
@@ -163,7 +163,7 @@ export function Sidebar() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -8, scale: 0.96 }}
               transition={{ duration: 0.25, ease: EASE_SPRING }}
-              className="glass-menu absolute top-0 left-[72px] z-50 w-60 space-y-1 rounded-2xl p-2"
+              className="glass absolute top-0 left-[72px] z-50 w-60 space-y-1 rounded-2xl p-2"
             >
               <div className="px-2.5 py-1.5 text-xs font-bold tracking-wider text-dim uppercase">
                 {profile.name}

@@ -35,7 +35,7 @@ export function Top10Module({
       aside={
         <div className="flex flex-wrap items-center gap-2">
           {tabs.length > 0 && (
-            <div className="no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full bg-white/[0.05] p-1 refract">
+            <div className="no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto glass rounded-full p-1">
               {tabs.map((t) => (
                 <button
                   key={t}
@@ -61,7 +61,7 @@ export function Top10Module({
               ))}
             </div>
           )}
-          <div className="flex items-center gap-0.5 rounded-full bg-white/[0.05] p-1 refract">
+          <div className="flex items-center gap-0.5 glass rounded-full p-1">
             {(["movie", "series"] as const).map((t) => (
               <button
                 key={t}

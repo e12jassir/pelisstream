@@ -97,7 +97,7 @@ function RailItem({
           {badge > 9 ? "9+" : badge}
         </span>
       )}
-      <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100">
+      <span className="glass-menu pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100">
         {item.label}
       </span>
     </a>
@@ -136,29 +136,11 @@ export function Sidebar() {
       aria-label="Navegación principal"
       className="pointer-events-none fixed inset-y-0 left-3 z-50 hidden w-[60px] flex-col justify-between py-4 md:flex"
     >
-      {/* Isla superior: Navegación */}
-      <div className="glass pointer-events-auto flex flex-col items-center gap-1 rounded-[24px] p-1.5">
-        {PRIMARY_NAV.map((item) => (
-          <RailItem
-            key={item.label}
-            item={item}
-            active={isActive(item)}
-            badge={item.route.name === "list" ? listCount : undefined}
-          />
-        ))}
-      </div>
-
-      {/* Isla inferior: Cuenta, Ajustes y Perfil */}
+      {/* Isla superior izquierda: Perfil */}
       <div
         ref={switcherRef}
-        className="glass pointer-events-auto relative flex flex-col items-center gap-1 rounded-[24px] p-1.5"
+        className="glass pointer-events-auto relative flex flex-col items-center rounded-[24px] p-1.5"
       >
-        {SECONDARY_NAV.map((item) => (
-          <RailItem key={item.label} item={item} active={isActive(item)} />
-        ))}
-
-        <div className="my-1 h-px w-7 bg-white/10" />
-
         <button
           type="button"
           onClick={() => setSwitcher((s) => !s)}
@@ -167,9 +149,11 @@ export function Sidebar() {
           className="group/prof relative flex size-12 items-center justify-center rounded-2xl transition hover:bg-white/[0.08]"
         >
           <Avatar index={profile.avatar} className="size-8 shrink-0" />
-          <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
-            {profile.name}
-          </span>
+          {!switcher && (
+            <span className="glass-menu pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
+              {profile.name}
+            </span>
+          )}
         </button>
 
         <AnimatePresence>
@@ -179,7 +163,7 @@ export function Sidebar() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -8, scale: 0.96 }}
               transition={{ duration: 0.25, ease: EASE_SPRING }}
-              className="glass absolute bottom-0 left-[72px] z-50 w-60 space-y-1 rounded-2xl p-2"
+              className="glass-menu absolute top-0 left-[72px] z-50 w-60 space-y-1 rounded-2xl p-2"
             >
               <div className="px-2.5 py-1.5 text-xs font-bold tracking-wider text-dim uppercase">
                 {profile.name}
@@ -233,6 +217,25 @@ export function Sidebar() {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Isla central: Navegación (centrada verticalmente) */}
+      <div className="glass pointer-events-auto absolute top-1/2 left-0 flex -translate-y-1/2 flex-col items-center gap-1 rounded-[24px] p-1.5">
+        {PRIMARY_NAV.map((item) => (
+          <RailItem
+            key={item.label}
+            item={item}
+            active={isActive(item)}
+            badge={item.route.name === "list" ? listCount : undefined}
+          />
+        ))}
+      </div>
+
+      {/* Isla inferior: Cuenta y Ajustes */}
+      <div className="glass pointer-events-auto flex flex-col items-center gap-1 rounded-[24px] p-1.5">
+        {SECONDARY_NAV.map((item) => (
+          <RailItem key={item.label} item={item} active={isActive(item)} />
+        ))}
       </div>
     </nav>
   );

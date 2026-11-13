@@ -7,7 +7,6 @@ import {
   Pencil,
   Plus,
   RefreshCw,
-  UserRound,
 } from "lucide-react";
 import { useState } from "react";
 import { cloudActions, useCloud } from "../lib/cloud";
@@ -250,45 +249,28 @@ function AuthWelcome() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-md"
         >
-          <Bezel radius={32} pad={6} coreClassName="p-6 sm:p-9">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-xs font-bold text-accent">
-              <Cloud className="size-3.5" />
-              <span>Sin correos · Multi-dispositivo</span>
-            </div>
-
-            <h1 className="mb-2 display text-3xl leading-tight sm:text-4xl">
-              {mode === "login" ? "Tu cine, donde vayas." : "Crea tu cuenta."}
+          <Bezel radius={32} pad={6} coreClassName="p-7 sm:p-10">
+            <h1 className="mb-6 display text-center text-3xl tracking-tight sm:text-4xl">
+              {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
             </h1>
-            <p className="mb-6 text-sm leading-relaxed text-muted">
-              {mode === "login"
-                ? "Inicia sesión para recuperar tus perfiles, progreso y temas en cualquier dispositivo."
-                : "Solo usuario y contraseña. Guarda tus perfiles, listas y temas en la nube."}
-            </p>
 
             <CloudAuthForm
               mode={mode}
               onModeChange={setMode}
               loading={loading}
               onLoadingChange={setLoading}
-              submitLabel={mode === "login" ? "Iniciar sesión" : "Crear cuenta y entrar"}
+              submitLabel={mode === "login" ? "Entrar" : "Crear cuenta"}
             />
-
-            <div className="my-5 flex items-center gap-3 text-xs font-semibold text-dim">
-              <span className="h-px flex-1 bg-line" />
-              <span>o</span>
-              <span className="h-px flex-1 bg-line" />
-            </div>
 
             <button
               type="button"
               disabled={loading}
               onClick={() => {
                 cloudActions.enterGuest();
-                ui.toast("Entrando como invitado");
+                ui.toast("Modo invitado");
               }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/[0.06] px-6 py-3 text-sm font-bold text-muted refract transition hover:bg-white/[0.11] hover:text-fg"
+              className="mt-4 w-full rounded-full py-2.5 text-center text-sm font-medium text-muted transition hover:text-fg"
             >
-              <UserRound className="size-4" />
               Mirar como invitado
             </button>
           </Bezel>

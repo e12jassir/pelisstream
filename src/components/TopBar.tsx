@@ -26,10 +26,10 @@ export function TopBar() {
       <form
         onSubmit={submit}
         className={cx(
-          "glass pointer-events-auto flex h-12 items-center gap-3 rounded-full px-5 transition-all duration-300",
+          "glass border-gradient pointer-events-auto flex h-12 items-center gap-3 rounded-full px-5 transition-all duration-300",
           focused
-            ? "w-full max-w-lg border-white/30 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.85)]"
-            : "w-full max-w-sm hover:border-white/25 sm:max-w-md",
+            ? "w-full max-w-lg shadow-[0_20px_60px_-10px_rgba(0,0,0,0.85)]"
+            : "w-full max-w-sm sm:max-w-md",
         )}
       >
         <Search className={cx("size-4 shrink-0 transition", focused ? "text-accent" : "text-muted")} />

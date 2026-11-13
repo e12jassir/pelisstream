@@ -274,7 +274,7 @@ export function Sidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35, ease: EASE_GLIDE }}
-            className="pointer-events-none fixed inset-0 z-40 hidden bg-gradient-to-r from-black/40 via-black/15 to-transparent md:block"
+            className="pointer-events-none fixed inset-0 z-40 hidden bg-slate-950/20 md:block"
           />
         )}
       </AnimatePresence>
@@ -290,7 +290,7 @@ export function Sidebar() {
           initial={false}
           animate={{ width: open ? 276 : 66 }}
           transition={{ duration: 0.42, ease: EASE_SPRING }}
-          className="absolute top-3 bottom-3 left-3 overflow-hidden rounded-[26px] bg-white/[0.06] px-1 backdrop-blur-[32px] backdrop-saturate-[180%] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_24px_60px_-12px_rgba(0,0,0,0.75)]"
+          className="glass border-gradient !absolute top-3 bottom-3 left-3 overflow-hidden rounded-[26px] px-1"
         >
           {body(open)}
         </motion.div>

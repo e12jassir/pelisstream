@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Cloud, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useProfiles } from "../lib/store";
 import { ui, useUi } from "../lib/ui";
 import { Bezel } from "./Bezel";
 import { CloudAuthForm } from "./CloudAuthForm";
@@ -16,7 +15,6 @@ export function AccountModal() {
 }
 
 function AccountDialog({ initialMode }: { initialMode: "login" | "register" }) {
-  const profiles = useProfiles();
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +42,7 @@ function AccountDialog({ initialMode }: { initialMode: "login" | "register" }) {
         aria-modal="true"
         aria-label={mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
       >
-        <Bezel radius={32} pad={6} coreClassName="p-6 sm:p-8">
+        <Bezel radius={32} pad={6} coreClassName="p-7 sm:p-10">
           <button
             type="button"
             onClick={() => !loading && ui.closeAccountModal()}
@@ -54,28 +52,16 @@ function AccountDialog({ initialMode }: { initialMode: "login" | "register" }) {
             <X className="size-5" />
           </button>
 
-          <div className="mb-5 flex items-center gap-2.5 text-accent">
-            <Cloud className="size-5" />
-            <span className="eyebrow text-xs">Sincronización entre dispositivos</span>
-          </div>
-
-          <h2 className="mb-1.5 display text-3xl">
+          <h2 className="mb-6 display text-center text-3xl tracking-tight">
             {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
           </h2>
-          <p className="mb-6 text-sm text-muted">
-            {mode === "login"
-              ? "Usa tu usuario y contraseña para recuperar tus perfiles, progreso y temas en este dispositivo."
-              : profiles.length > 0
-                ? "Solo usuario y contraseña. Tus perfiles y progreso actuales se subirán a esta cuenta."
-                : "Solo usuario y contraseña, sin correos. Tu progreso y temas viajarán contigo a cualquier dispositivo."}
-          </p>
 
           <CloudAuthForm
             mode={mode}
             onModeChange={setMode}
             loading={loading}
             onLoadingChange={setLoading}
-            submitLabel={mode === "login" ? "Entrar y sincronizar" : "Crear cuenta"}
+            submitLabel={mode === "login" ? "Entrar" : "Crear cuenta"}
             onSuccess={() => ui.closeAccountModal()}
           />
         </Bezel>

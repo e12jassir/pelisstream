@@ -90,7 +90,7 @@ export function CloudAuthForm({
             value={username}
             maxLength={24}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="ej. esteban.mj"
+            placeholder="Nombre de usuario"
             className="w-full rounded-xl bg-white/[0.06] refract px-4 py-3 text-base font-semibold outline-none transition focus:border-accent"
           />
           {username.length > 0 && !userValid && (

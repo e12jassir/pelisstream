@@ -69,7 +69,7 @@ export function CloudAuthForm({
           maxLength={24}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Nombre de usuario"
-          className="w-full rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3.5 text-base font-medium text-fg placeholder:text-dim outline-none transition focus:border-accent focus:bg-white/[0.11]"
+          className="w-full rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3.5 text-base font-medium text-fg placeholder:text-dim outline-none transition focus:border-white/50 focus:bg-white/[0.11]"
         />
         {username.length > 0 && !userValid && (
           <span className="mt-1.5 block text-xs text-muted">
@@ -90,7 +90,7 @@ export function CloudAuthForm({
             maxLength={128}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Mínimo 6 caracteres"
-            className="w-full rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3.5 pr-12 text-base font-medium text-fg placeholder:text-dim outline-none transition focus:border-accent focus:bg-white/[0.11]"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3.5 pr-12 text-base font-medium text-fg placeholder:text-dim outline-none transition focus:border-white/50 focus:bg-white/[0.11]"
           />
           <button
             type="button"
@@ -127,7 +127,7 @@ export function CloudAuthForm({
             onModeChange(mode === "login" ? "register" : "login");
             setError(null);
           }}
-          className="font-bold text-fg underline-offset-4 transition hover:text-accent hover:underline"
+          className="font-bold text-fg underline-offset-4 transition hover:text-white hover:underline"
         >
           {mode === "login" ? "Crear cuenta" : "Iniciar sesión"}
         </button>

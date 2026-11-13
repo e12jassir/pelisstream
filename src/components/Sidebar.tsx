@@ -251,34 +251,19 @@ const MOBILE_TABS: NavItem[] = [
 export function MobileNav() {
   const route = useRoute();
   const profile = useActiveProfile();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   if (!profile) return null;
 
   return (
     <>
-      <header
-        className={cx(
-          "fixed inset-x-0 top-0 z-40 flex items-center justify-between px-4 py-3 transition-colors duration-300 md:hidden",
-          scrolled
-            ? "bg-ink/85 backdrop-blur-xl"
-            : "bg-gradient-to-b from-black/70 to-transparent",
-        )}
+      <button
+        type="button"
+        onClick={() => actions.signOut()}
+        aria-label={`Perfil: ${profile.name} (cambiar)`}
+        className="glass fixed top-4 right-4 z-40 flex size-12 items-center justify-center rounded-full transition active:scale-95 md:hidden"
       >
-        <div className="size-8" />
-        <div className="flex items-center gap-2">
-          <button onClick={() => actions.signOut()} aria-label="Cambiar perfil">
-            <Avatar index={profile.avatar} className="size-8" />
-          </button>
-        </div>
-      </header>
+        <Avatar index={profile.avatar} className="size-8 shrink-0" />
+      </button>
 
       <nav className="glass fixed inset-x-3 bottom-3 z-40 flex justify-around rounded-2xl px-2 py-2 md:hidden">
         {MOBILE_TABS.map((item) => {

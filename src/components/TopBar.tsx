@@ -85,7 +85,7 @@ export function TopBar() {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center px-4 pt-4 md:pl-[84px]">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pr-[76px] pl-4 pt-4 md:pr-4 md:pl-[84px]">
       <div
         ref={containerRef}
         className={cx(

@@ -6,7 +6,7 @@ import {
   parseJsonBody,
   sanitizeState,
   verifyToken,
-} from "./_lib/db";
+} from "./_lib/db.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (applyCors(req, res)) return;

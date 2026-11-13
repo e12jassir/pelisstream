@@ -8,14 +8,14 @@ import {
   Plus,
   RefreshCw,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCatalog } from "../lib/cinemeta";
 import { cloudActions, useCloud } from "../lib/cloud";
 import { cx } from "../lib/format";
 import { actions, useProfiles } from "../lib/store";
 import { ui } from "../lib/ui";
 import type { Profile } from "../lib/types";
 import { Avatar } from "./Avatar";
-import { Bezel } from "./Bezel";
 import { BrandMark, Wordmark } from "./Brand";
 import { CloudAuthForm } from "./CloudAuthForm";
 
@@ -220,6 +220,22 @@ export function ProfileGate() {
 function AuthWelcome() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
+  const [posters, setPosters] = useState<string[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    getCatalog({ type: "movie", catalog: "top" })
+      .then((items) => {
+        if (!alive) return;
+        setPosters(items.map((x) => x.poster).filter(Boolean).slice(0, 24));
+      })
+      .catch(() => {
+        /* fallback to ambient gradient if offline */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <motion.div
@@ -227,12 +243,34 @@ function AuthWelcome() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.04 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-ink"
+      className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-[#060609]"
     >
-      {/* Ambient cinema glow */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-48 left-1/2 size-[760px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(240,166,64,0.16),transparent)]" />
-        <div className="absolute -bottom-56 -left-32 size-[540px] rounded-full bg-[radial-gradient(closest-side,rgba(120,140,255,0.09),transparent)]" />
+      {/* Cinematic Netflix/Max-style tilted poster mosaic backdrop */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden select-none">
+        {posters.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1.18 }}
+            animate={{ opacity: 0.42, scale: 1.12 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+            className="grid h-full w-full -rotate-6 grid-cols-3 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8"
+          >
+            {posters.map((src, i) => (
+              <div
+                key={i}
+                className="aspect-[2/3] overflow-hidden rounded-xl bg-white/[0.04]"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  loading="eager"
+                  className="h-full w-full object-cover opacity-85"
+                />
+              </div>
+            ))}
+          </motion.div>
+        )}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,6,9,0.52)_0%,rgba(6,6,9,0.9)_70%,#060609_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/45 to-[#060609]" />
       </div>
 
       <header className="relative flex items-center justify-between px-6 py-6 sm:px-12">
@@ -240,28 +278,39 @@ function AuthWelcome() {
           <BrandMark className="size-9" />
           <Wordmark className="text-2xl" />
         </div>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => {
+            cloudActions.enterGuest();
+            ui.toast("Modo invitado");
+          }}
+          className="rounded-full border border-white/15 bg-black/50 px-5 py-2 text-xs font-bold text-fg backdrop-blur-md transition hover:border-white/30 hover:bg-white/10"
+        >
+          Mirar como invitado
+        </button>
       </header>
 
-      <div className="relative flex flex-1 items-center justify-center px-4 pb-14">
+      <div className="relative flex flex-1 items-center justify-center px-4 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-md"
+          className="w-full max-w-[430px] rounded-3xl border border-white/[0.1] bg-black/75 p-7 shadow-[0_40px_120px_rgba(0,0,0,0.95)] backdrop-blur-2xl sm:p-10"
         >
-          <Bezel radius={32} pad={6} coreClassName="p-7 sm:p-10">
-            <h1 className="mb-6 display text-center text-3xl tracking-tight sm:text-4xl">
-              {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
-            </h1>
+          <h1 className="mb-7 display text-3xl tracking-tight sm:text-4xl">
+            {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
+          </h1>
 
-            <CloudAuthForm
-              mode={mode}
-              onModeChange={setMode}
-              loading={loading}
-              onLoadingChange={setLoading}
-              submitLabel={mode === "login" ? "Entrar" : "Crear cuenta"}
-            />
+          <CloudAuthForm
+            mode={mode}
+            onModeChange={setMode}
+            loading={loading}
+            onLoadingChange={setLoading}
+            submitLabel={mode === "login" ? "Entrar" : "Crear cuenta"}
+          />
 
+          <div className="mt-6 border-t border-white/10 pt-5">
             <button
               type="button"
               disabled={loading}
@@ -269,11 +318,11 @@ function AuthWelcome() {
                 cloudActions.enterGuest();
                 ui.toast("Modo invitado");
               }}
-              className="mt-4 w-full rounded-full py-2.5 text-center text-sm font-medium text-muted transition hover:text-fg"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 text-center text-sm font-semibold text-muted transition hover:border-white/20 hover:bg-white/[0.08] hover:text-fg"
             >
               Mirar como invitado
             </button>
-          </Bezel>
+          </div>
         </motion.div>
       </div>
     </motion.div>

@@ -137,24 +137,23 @@ export function Sidebar() {
       className="pointer-events-none fixed inset-y-0 left-3 z-50 hidden w-[60px] flex-col justify-between py-4 md:flex"
     >
       {/* Isla superior izquierda: Perfil */}
-      <div
-        ref={switcherRef}
-        className="glass pointer-events-auto relative flex flex-col items-center rounded-[24px] p-1.5"
-      >
-        <button
-          type="button"
-          onClick={() => setSwitcher((s) => !s)}
-          aria-expanded={switcher}
-          aria-label={`Perfil: ${profile.name}`}
-          className="group/prof relative flex size-12 items-center justify-center rounded-2xl transition hover:bg-white/[0.08]"
-        >
-          <Avatar index={profile.avatar} className="size-8 shrink-0" />
-          {!switcher && (
-            <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
-              {profile.name}
-            </span>
-          )}
-        </button>
+      <div ref={switcherRef} className="pointer-events-auto relative">
+        <div className="glass flex flex-col items-center rounded-[24px] p-1.5">
+          <button
+            type="button"
+            onClick={() => setSwitcher((s) => !s)}
+            aria-expanded={switcher}
+            aria-label={`Perfil: ${profile.name}`}
+            className="group/prof relative flex size-12 items-center justify-center rounded-2xl transition hover:bg-white/[0.08]"
+          >
+            <Avatar index={profile.avatar} className="size-8 shrink-0" />
+            {!switcher && (
+              <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
+                {profile.name}
+              </span>
+            )}
+          </button>
+        </div>
 
         <AnimatePresence>
           {switcher && (

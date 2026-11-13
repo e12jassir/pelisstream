@@ -290,7 +290,7 @@ export function Sidebar() {
           initial={false}
           animate={{ width: open ? 276 : 66 }}
           transition={{ duration: 0.42, ease: EASE_SPRING }}
-          className="glass border-gradient !absolute top-3 bottom-3 left-3 overflow-hidden rounded-[26px] px-1"
+          className="glass absolute top-3 bottom-3 left-3 overflow-hidden rounded-[26px] px-1"
         >
           {body(open)}
         </motion.div>

@@ -26,7 +26,7 @@ export function TopBar() {
       <form
         onSubmit={submit}
         className={cx(
-          "glass border-gradient pointer-events-auto flex h-12 items-center gap-3 rounded-full px-5 transition-all duration-300",
+          "glass pointer-events-auto flex h-12 items-center gap-3 rounded-full px-5 transition-all duration-300",
           focused
             ? "w-full max-w-lg shadow-[0_20px_60px_-10px_rgba(0,0,0,0.85)]"
             : "w-full max-w-sm sm:max-w-md",

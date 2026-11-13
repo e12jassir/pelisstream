@@ -13,6 +13,7 @@ interface UiState {
   toasts: Toast[];
   profileEditor: { profileId: string | null } | null;
   pinRequest: { profileId: string } | null;
+  accountModal: { mode: "login" | "register" } | null;
 }
 
 export const uiStore = createStore<UiState>({
@@ -21,6 +22,7 @@ export const uiStore = createStore<UiState>({
   toasts: [],
   profileEditor: null,
   pinRequest: null,
+  accountModal: null,
 });
 
 let pinSuccess: (() => void) | null = null;
@@ -57,6 +59,12 @@ export const ui = {
   },
   closeProfileEditor() {
     uiStore.set((s) => ({ ...s, profileEditor: null }));
+  },
+  openAccountModal(mode: "login" | "register" = "login") {
+    uiStore.set((s) => ({ ...s, accountModal: { mode } }));
+  },
+  closeAccountModal() {
+    uiStore.set((s) => ({ ...s, accountModal: null }));
   },
   toast(message: string, tone: Toast["tone"] = "default") {
     const id = ++toastId;

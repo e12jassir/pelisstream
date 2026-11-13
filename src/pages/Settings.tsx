@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
-import { Check, Keyboard, Trash2 } from "lucide-react";
+import { Check, Cloud, Keyboard, LogOut, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { cloudActions, useCloud } from "../lib/cloud";
 import { cx } from "../lib/format";
 import { actions, useActiveProfile, useProfiles, useSettings } from "../lib/store";
 import { ui } from "../lib/ui";
@@ -16,6 +17,7 @@ export function Settings() {
   const s = useSettings();
   const profile = useActiveProfile();
   const profiles = useProfiles();
+  const cloud = useCloud();
   const set = (patch: Partial<ProfileSettings>) => actions.updateSettings(patch);
   if (!profile) return null;
 
@@ -141,6 +143,64 @@ export function Settings() {
                     </button>
                   ))}
               </div>
+            </div>
+          )}
+        </Card>
+
+        <Card title="Cuenta y sincronización">
+          {cloud.username ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5">
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
+                  <Cloud className="size-5" />
+                </span>
+                <div>
+                  <div className="font-bold">@{cloud.username}</div>
+                  <div className="text-sm text-muted">
+                    {cloud.syncing
+                      ? "Sincronizando..."
+                      : cloud.error
+                        ? cloud.error
+                        : "Progreso, perfiles y temas sincronizados."}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => void cloudActions.syncNow()}
+                  disabled={cloud.syncing}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20 disabled:opacity-50"
+                >
+                  <RefreshCw className={cx("size-3.5", cloud.syncing && "animate-spin")} />
+                  Sincronizar
+                </button>
+                <button
+                  onClick={() => {
+                    cloudActions.logout();
+                    ui.toast("Sesión cerrada");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-danger/15 px-4 py-2 text-sm font-bold text-danger hover:bg-danger/25"
+                >
+                  <LogOut className="size-3.5" />
+                  Salir
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5">
+              <div>
+                <div className="font-bold">Solo en este dispositivo</div>
+                <div className="text-sm text-muted">
+                  Crea una cuenta con usuario y contraseña para llevar tus perfiles, progreso y tema a cualquier dispositivo.
+                </div>
+              </div>
+              <button
+                onClick={() => ui.openAccountModal("register")}
+                className="inline-flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-sm font-bold text-ink transition hover:bg-white"
+              >
+                <Cloud className="size-4" />
+                Conectar cuenta
+              </button>
             </div>
           )}
         </Card>

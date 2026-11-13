@@ -1,19 +1,34 @@
 import { motion } from "motion/react";
-import { Lock, Pencil, Plus } from "lucide-react";
+import {
+  Cloud,
+  CloudOff,
+  Lock,
+  LogOut,
+  Pencil,
+  Plus,
+  RefreshCw,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
+import { cloudActions, useCloud } from "../lib/cloud";
 import { cx } from "../lib/format";
 import { actions, useProfiles } from "../lib/store";
 import { ui } from "../lib/ui";
 import type { Profile } from "../lib/types";
 import { Avatar } from "./Avatar";
+import { Bezel } from "./Bezel";
 import { BrandMark, Wordmark } from "./Brand";
+import { CloudAuthForm } from "./CloudAuthForm";
 
 const MAX_PROFILES = 5;
 
 export function ProfileGate() {
   const profiles = useProfiles();
+  const cloud = useCloud();
   const [manage, setManage] = useState(false);
   const [entering, setEntering] = useState<string | null>(null);
+
+  const showAuthWelcome = !cloud.token && !cloud.guestMode && profiles.length === 0;
 
   const enter = (p: Profile) => {
     setEntering(p.id);
@@ -29,6 +44,10 @@ export function ProfileGate() {
     enter(p);
   };
 
+  if (showAuthWelcome) {
+    return <AuthWelcome />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -37,9 +56,46 @@ export function ProfileGate() {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-ink"
     >
-      <header className="relative flex items-center gap-3 px-6 py-6 sm:px-12">
-        <BrandMark className="size-9" />
-        <Wordmark className="text-2xl" />
+      <header className="relative flex flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-12">
+        <div className="flex items-center gap-3">
+          <BrandMark className="size-9" />
+          <Wordmark className="text-2xl" />
+        </div>
+
+        {cloud.username ? (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-4 py-2 text-xs font-semibold text-fg refract">
+              {cloud.syncing ? (
+                <RefreshCw className="size-3.5 animate-spin text-accent" />
+              ) : cloud.error ? (
+                <CloudOff className="size-3.5 text-danger" />
+              ) : (
+                <Cloud className="size-3.5 text-accent" />
+              )}
+              <span>@{cloud.username}</span>
+            </span>
+            <button
+              onClick={() => {
+                cloudActions.logout();
+                setManage(false);
+                ui.toast("Sesión cerrada en este dispositivo");
+              }}
+              title="Cerrar sesión de cuenta"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 py-2 text-xs font-semibold text-muted refract transition hover:text-fg"
+            >
+              <LogOut className="size-3.5" />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => ui.openAccountModal("login")}
+            className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-xs font-bold text-fg refract transition hover:bg-white/[0.12]"
+          >
+            <Cloud className="size-3.5 text-accent" />
+            <span>Iniciar sesión / Crear cuenta</span>
+          </button>
+        )}
       </header>
 
       <div className="relative flex flex-1 flex-col items-center justify-center px-6 pb-16">
@@ -49,16 +105,24 @@ export function ProfileGate() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="display mb-4 text-center text-[2.6rem] sm:text-[4rem]"
         >
-          {manage ? "Administrar perfiles" : "¿Quién está viendo?"}
+          {profiles.length === 0
+            ? "Crea tu primer perfil"
+            : manage
+              ? "Administrar perfiles"
+              : "¿Quién está viendo?"}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { delay: 0.2 } }}
-          className="mb-12 text-center text-muted"
+          className="mb-12 max-w-lg text-center text-muted"
         >
-          {manage
-            ? "Elige un perfil para editarlo."
-            : "Cada perfil tiene su propia lista, historial y recomendaciones."}
+          {profiles.length === 0
+            ? cloud.username
+              ? `Tu cuenta @${cloud.username} está lista. Crea tu primer perfil para empezar.`
+              : "Crea un perfil nuevo o inicia sesión con tu cuenta para traer tu progreso y temas."
+            : manage
+              ? "Elige un perfil para editarlo."
+              : "Cada perfil tiene su propia lista, historial y recomendaciones."}
         </motion.p>
 
         <motion.ul
@@ -92,7 +156,6 @@ export function ProfileGate() {
                 className="group/p flex w-28 flex-col items-center gap-3.5 sm:w-36"
               >
                 <span className="relative block transition-transform duration-500 ease-[var(--ease-spring)] group-hover/p:scale-[1.05]">
-                  {/* Focus ring as its own layer so only opacity animates */}
                   <span className="absolute -inset-[7px] rounded-[28%] opacity-0 ring-[3px] ring-fg transition-opacity duration-300 group-hover/p:opacity-100" />
                   <Avatar index={p.avatar} className="size-28 sm:size-36" />
                   {manage && <span className="absolute inset-0 rounded-[24%] bg-black/55" />}
@@ -137,17 +200,99 @@ export function ProfileGate() {
           )}
         </motion.ul>
 
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: entering ? 0 : 1, transition: { delay: entering ? 0 : 0.5 } }}
-          onClick={() => setManage((m) => !m)}
-          className={cx(
-            "eyebrow mt-14 rounded-full px-7 py-3.5 transition-transform duration-500 ease-[var(--ease-spring)] hover:scale-[1.04]",
-            manage ? "bg-fg text-ink" : "bg-white/[0.06] text-muted refract hover:text-fg",
-          )}
+        {profiles.length > 0 && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: entering ? 0 : 1, transition: { delay: entering ? 0 : 0.5 } }}
+            onClick={() => setManage((m) => !m)}
+            className={cx(
+              "eyebrow mt-14 rounded-full px-7 py-3.5 transition-transform duration-500 ease-[var(--ease-spring)] hover:scale-[1.04]",
+              manage ? "bg-fg text-ink" : "bg-white/[0.06] text-muted refract hover:text-fg",
+            )}
+          >
+            {manage ? "Listo" : "Administrar perfiles"}
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function AuthWelcome() {
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.04 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-ink"
+    >
+      {/* Ambient cinema glow */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-48 left-1/2 size-[760px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(240,166,64,0.16),transparent)]" />
+        <div className="absolute -bottom-56 -left-32 size-[540px] rounded-full bg-[radial-gradient(closest-side,rgba(120,140,255,0.09),transparent)]" />
+      </div>
+
+      <header className="relative flex items-center justify-between px-6 py-6 sm:px-12">
+        <div className="flex items-center gap-3">
+          <BrandMark className="size-9" />
+          <Wordmark className="text-2xl" />
+        </div>
+      </header>
+
+      <div className="relative flex flex-1 items-center justify-center px-4 pb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-md"
         >
-          {manage ? "Listo" : "Administrar perfiles"}
-        </motion.button>
+          <Bezel radius={32} pad={6} coreClassName="p-6 sm:p-9">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-xs font-bold text-accent">
+              <Cloud className="size-3.5" />
+              <span>Sin correos · Multi-dispositivo</span>
+            </div>
+
+            <h1 className="mb-2 display text-3xl leading-tight sm:text-4xl">
+              {mode === "login" ? "Tu cine, donde vayas." : "Crea tu cuenta."}
+            </h1>
+            <p className="mb-6 text-sm leading-relaxed text-muted">
+              {mode === "login"
+                ? "Inicia sesión para recuperar tus perfiles, progreso y temas en cualquier dispositivo."
+                : "Solo usuario y contraseña. Guarda tus perfiles, listas y temas en la nube."}
+            </p>
+
+            <CloudAuthForm
+              mode={mode}
+              onModeChange={setMode}
+              loading={loading}
+              onLoadingChange={setLoading}
+              submitLabel={mode === "login" ? "Iniciar sesión" : "Crear cuenta y entrar"}
+            />
+
+            <div className="my-5 flex items-center gap-3 text-xs font-semibold text-dim">
+              <span className="h-px flex-1 bg-line" />
+              <span>o</span>
+              <span className="h-px flex-1 bg-line" />
+            </div>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                cloudActions.enterGuest();
+                ui.toast("Entrando como invitado");
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/[0.06] px-6 py-3 text-sm font-bold text-muted refract transition hover:bg-white/[0.11] hover:text-fg"
+            >
+              <UserRound className="size-4" />
+              Mirar como invitado
+            </button>
+          </Bezel>
+        </motion.div>
       </div>
     </motion.div>
   );

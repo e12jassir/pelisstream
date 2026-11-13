@@ -1,7 +1,21 @@
 import { motion, useInView, animate } from "motion/react";
-import { Bookmark, Clapperboard, Clock, Heart, ListVideo, Pencil, Plus, Repeat, Tv } from "lucide-react";
+import {
+  Bookmark,
+  Clapperboard,
+  Clock,
+  Cloud,
+  Heart,
+  ListVideo,
+  LogOut,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Repeat,
+  Tv,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { genreLabel } from "../lib/cinemeta";
+import { cloudActions, useCloud } from "../lib/cloud";
 import { cx } from "../lib/format";
 import { navigate } from "../lib/router";
 import { actions, useActiveProfile, useProfileData } from "../lib/store";
@@ -15,6 +29,7 @@ import { ItemsRail, GUTTER } from "../components/Rail";
 export function Me() {
   const profile = useActiveProfile();
   const data = useProfileData();
+  const cloud = useCloud();
   const stats = statistics(data);
   if (!profile) return null;
   const hours = Math.floor(stats.watchedMinutes / 60);
@@ -73,6 +88,81 @@ export function Me() {
               <Repeat className="size-4" /> Cambiar
             </button>
           </div>
+        </div>
+      </section>
+
+      <section className={cx("mb-8", GUTTER)}>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-surface p-5 refract">
+          {cloud.username ? (
+            <>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                  <Cloud className="size-5" />
+                </span>
+                <div>
+                  <div className="flex items-center gap-2 font-bold">
+                    <span>Cuenta @{cloud.username}</span>
+                    <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-bold text-accent">
+                      {cloud.syncing ? "Sincronizando..." : "En la nube"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted">
+                    {cloud.error
+                      ? cloud.error
+                      : "Tus perfiles, progreso y temas están sincronizados entre dispositivos."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => void cloudActions.syncNow()}
+                  disabled={cloud.syncing}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-xs font-bold transition hover:bg-white/20 disabled:opacity-50"
+                >
+                  <RefreshCw className={cx("size-3.5", cloud.syncing && "animate-spin")} />
+                  Sincronizar
+                </button>
+                <button
+                  onClick={() => {
+                    cloudActions.logout();
+                    ui.toast("Sesión cerrada");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-danger/15 px-4 py-2 text-xs font-bold text-danger transition hover:bg-danger/25"
+                >
+                  <LogOut className="size-3.5" />
+                  Cerrar sesión
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3.5">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-white/[0.06] text-muted">
+                  <Cloud className="size-5" />
+                </span>
+                <div>
+                  <div className="font-bold">Estás mirando como invitado</div>
+                  <p className="text-sm text-muted">
+                    Inicia sesión o crea una cuenta con usuario y contraseña para no perder tu progreso ni tu tema en otros dispositivos.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => ui.openAccountModal("login")}
+                  className="rounded-full bg-fg px-5 py-2 text-xs font-bold text-ink transition hover:bg-white"
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  onClick={() => ui.openAccountModal("register")}
+                  className="rounded-full bg-white/10 px-5 py-2 text-xs font-bold transition hover:bg-white/20"
+                >
+                  Crear cuenta
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 

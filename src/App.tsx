@@ -1,5 +1,6 @@
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useEffect } from "react";
+import { AccountModal } from "./components/AccountModal";
 import { BrandMark, Wordmark } from "./components/Brand";
 import { DetailsModal } from "./components/DetailsModal";
 import { HoverPreview } from "./components/HoverPreview";
@@ -11,6 +12,7 @@ import { MobileNav, Sidebar } from "./components/Sidebar";
 import { PinPrompt } from "./components/PinPrompt";
 import { Toasts } from "./components/Toasts";
 import { hover } from "./lib/hover";
+import { initCloudSync } from "./lib/cloud";
 import { navigate, useRoute, type Route } from "./lib/router";
 import { useActiveProfile, useSettings } from "./lib/store";
 import { uiStore } from "./lib/ui";
@@ -71,6 +73,10 @@ export default function App() {
       : route.name === "brand"
         ? `brand-${route.platform}`
         : route.name;
+
+  useEffect(() => {
+    initCloudSync();
+  }, []);
 
   useEffect(() => {
     hover.close();
@@ -140,6 +146,7 @@ export default function App() {
 
       <ProfileEditor />
       <PinPrompt />
+      <AccountModal />
       <Toasts />
     </MotionConfig>
   );

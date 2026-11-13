@@ -10,6 +10,16 @@ import type {
 import { episodeKey } from "./types";
 
 const STORAGE_KEY = "pelisstream:v3";
+const DEFAULT_PROFILE_IDS = new Set([
+  "p-main",
+  "p-gaby",
+  "p-fam",
+  "p-kids",
+  "esteban",
+  "gaby",
+  "papa",
+  "cine-arte",
+]);
 
 export const DEFAULT_SETTINGS: ProfileSettings = {
   autoplayPreviews: true,
@@ -35,57 +45,98 @@ const emptyData = (kids = false): ProfileData => ({
   settings: { ...DEFAULT_SETTINGS, previewSound: false, subtitles: kids ? "es" : "off" },
 });
 
-interface PersistedState {
+export interface PersistedState {
   version: 3;
   profiles: Profile[];
   activeProfileId: string | null;
   data: Record<string, ProfileData>;
 }
 
-const seed = (): PersistedState => {
-  const profiles: Profile[] = [
-    { id: "p-main", name: "Esteban", avatar: 0, kids: false },
-    { id: "p-gaby", name: "Gaby", avatar: 6, kids: false },
-    { id: "p-fam", name: "Familia", avatar: 3, kids: false },
-    { id: "p-kids", name: "Niños", avatar: 9, kids: true },
-  ];
-  return {
-    version: 3,
-    profiles,
-    activeProfileId: null,
-    data: Object.fromEntries(profiles.map((p) => [p.id, emptyData(p.kids)])),
-  };
-};
+export interface CloudState {
+  version: 3;
+  profiles: Profile[];
+  data: Record<string, ProfileData>;
+}
+
+const seed = (): PersistedState => ({
+  version: 3,
+  profiles: [],
+  activeProfileId: null,
+  data: {},
+});
+
+export function normalizeCloudState(raw: unknown): CloudState {
+  if (!raw || typeof raw !== "object") return { version: 3, profiles: [], data: {} };
+  const parsed = raw as Partial<PersistedState>;
+  const rawProfiles = Array.isArray(parsed.profiles) ? parsed.profiles : [];
+  const profiles = rawProfiles.filter((p) => p && typeof p.id === "string" && !DEFAULT_PROFILE_IDS.has(p.id));
+  const rawData = parsed.data && typeof parsed.data === "object" ? parsed.data : {};
+  const data: Record<string, ProfileData> = {};
+
+  for (const p of profiles) {
+    const d = rawData[p.id] ?? emptyData(p.kids);
+    const currentPreferred = d.settings?.preferredProvider;
+    const preferredProvider =
+      !currentPreferred ||
+      currentPreferred === "vidsrc_pm" ||
+      currentPreferred === "autoembed" ||
+      currentPreferred === "multiembed"
+        ? "playlatin"
+        : currentPreferred;
+
+    data[p.id] = {
+      ...emptyData(p.kids),
+      ...d,
+      settings: { ...DEFAULT_SETTINGS, ...d.settings, preferredProvider },
+    };
+  }
+
+  return { version: 3, profiles, data };
+}
 
 const restore = (): PersistedState => {
   try {
+    for (const legacyKey of [
+      "pelisstream:v2",
+      "pelisstream_state",
+      "pelisstream_profiles",
+      "pelisstream_active_profile",
+    ]) {
+      localStorage.removeItem(legacyKey);
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
     const parsed = JSON.parse(raw) as PersistedState;
     if (parsed?.version !== 3 || !Array.isArray(parsed.profiles)) return seed();
-    for (const p of parsed.profiles) {
-      const d = parsed.data[p.id] ?? emptyData(p.kids);
-      // Ensure default provider is playlatin (Alex's working server)
-      const currentPreferred = d.settings?.preferredProvider;
-      const preferredProvider =
-        !currentPreferred || currentPreferred === "vidsrc_pm" || currentPreferred === "autoembed" || currentPreferred === "multiembed"
-          ? "playlatin"
-          : currentPreferred;
-
-      parsed.data[p.id] = {
-        ...emptyData(p.kids),
-        ...d,
-        settings: { ...DEFAULT_SETTINGS, ...d.settings, preferredProvider },
-      };
+    const normalized = normalizeCloudState(parsed);
+    const nextState: PersistedState = { ...normalized, activeProfileId: null };
+    if (normalized.profiles.length !== parsed.profiles.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
     }
     // Always start at the profile gate, like the reference platforms.
-    return { ...parsed, activeProfileId: null };
+    return nextState;
   } catch {
     return seed();
   }
 };
 
 let saveTimer: number | undefined;
+let suppressCloudHook = false;
+const cloudListeners = new Set<(state: CloudState) => void>();
+
+export function onDataChange(listener: (state: CloudState) => void): () => void {
+  cloudListeners.add(listener);
+  return () => cloudListeners.delete(listener);
+}
+
+export const getCloudSnapshot = (): CloudState => {
+  const s = appStore.get();
+  return { version: 3, profiles: s.profiles, data: s.data };
+};
+
+let lastProfiles: Profile[] | undefined;
+let lastData: Record<string, ProfileData> | undefined;
+
 export const appStore = createStore<PersistedState>(restore(), (state) => {
   window.clearTimeout(saveTimer);
   saveTimer = window.setTimeout(() => {
@@ -95,7 +146,18 @@ export const appStore = createStore<PersistedState>(restore(), (state) => {
       /* storage full or unavailable */
     }
   }, 150);
+
+  const dataMutated = state.profiles !== lastProfiles || state.data !== lastData;
+  lastProfiles = state.profiles;
+  lastData = state.data;
+  if (!suppressCloudHook && dataMutated) {
+    const snapshot: CloudState = { version: 3, profiles: state.profiles, data: state.data };
+    cloudListeners.forEach((fn) => fn(snapshot));
+  }
 });
+
+lastProfiles = appStore.get().profiles;
+lastData = appStore.get().data;
 
 /* ------------------------------ selectors ------------------------------ */
 
@@ -252,5 +314,29 @@ export const actions = {
   },
   resetProfile() {
     updateData((d) => ({ ...emptyData(), settings: d.settings }));
+  },
+  hydrateFromCloud(raw: unknown) {
+    const next = normalizeCloudState(raw);
+    suppressCloudHook = true;
+    try {
+      appStore.set((s) => {
+        const stillExists =
+          s.activeProfileId && next.profiles.some((p) => p.id === s.activeProfileId);
+        return {
+          ...next,
+          activeProfileId: stillExists ? s.activeProfileId : null,
+        };
+      });
+    } finally {
+      suppressCloudHook = false;
+    }
+  },
+  clearAllProfiles() {
+    suppressCloudHook = true;
+    try {
+      appStore.set(() => seed());
+    } finally {
+      suppressCloudHook = false;
+    }
   },
 };

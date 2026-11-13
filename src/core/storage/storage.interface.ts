@@ -37,49 +37,7 @@ export interface ProfileDataSnapshot {
   watchedEpisodes: Record<string, boolean>;
 }
 
-export const DEFAULT_PROFILES: readonly UserProfile[] = [
-  {
-    id: 'esteban',
-    name: 'Esteban',
-    roleLabel: '4K Dolby Vision · Director',
-    avatarId: 'samurai',
-    avatarColor: '#38bdf8',
-    avatarGradient: 'linear-gradient(135deg, #0ea5e9 0%, #1e1b4b 100%)',
-    initial: 'E',
-    preferredTheme: 'apple',
-  },
-  {
-    id: 'gaby',
-    name: 'Gaby',
-    roleLabel: 'Disney+ & Animación',
-    avatarId: 'starlight',
-    avatarColor: '#f472b6',
-    avatarGradient: 'linear-gradient(135deg, #ec4899 0%, #4c1d95 100%)',
-    initial: 'G',
-    isKids: true,
-    preferredTheme: 'disney',
-  },
-  {
-    id: 'papa',
-    name: 'Papá',
-    roleLabel: 'Acción IMAX & Clásicos',
-    avatarId: 'noir',
-    avatarColor: '#e50914',
-    avatarGradient: 'linear-gradient(135deg, #dc2626 0%, #450a0a 100%)',
-    initial: 'P',
-    preferredTheme: 'netflix',
-  },
-  {
-    id: 'cine-arte',
-    name: 'Sala VIP',
-    roleLabel: 'HBO Prestige & A24',
-    avatarId: 'astronaut',
-    avatarColor: '#a855f7',
-    avatarGradient: 'linear-gradient(135deg, #7c3aed 0%, #0f172a 100%)',
-    initial: 'V',
-    preferredTheme: 'max',
-  },
-];
+export const DEFAULT_PROFILES: readonly UserProfile[] = [];
 
 export interface CachedMediaMetadata {
   title: string;
@@ -158,9 +116,9 @@ export const createDefaultState = (): PelisStreamStorageSchemaV2 => ({
   preferredServerId: 'playlatin',
   hideWatchedInCatalog: false,
   cachedMetadata: {},
-  activeProfileId: 'esteban',
+  activeProfileId: '',
   themeId: 'apple',
-  profiles: [...DEFAULT_PROFILES],
+  profiles: [],
   profileBuckets: {},
 });
 

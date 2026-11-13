@@ -79,7 +79,7 @@ function Editor({ profileId }: { profileId: string | null }) {
           <p className="mb-7 text-sm text-muted">
             {existing
               ? "Personaliza el nombre, avatar y seguridad de este perfil."
-              : "Perfil 100% local — sin correos ni registros externos. Se guarda únicamente en tu navegador."}
+              : "Cada perfil guarda su propio progreso, lista y tema."}
           </p>
 
           <div className="mb-7 flex items-center gap-5">

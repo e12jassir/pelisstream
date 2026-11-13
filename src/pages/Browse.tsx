@@ -103,7 +103,7 @@ export function Browse({ type }: { type: MediaType }) {
         />
         <div className={cx("relative flex flex-wrap items-center gap-x-6 gap-y-3 py-4", GUTTER)}>
           <h1 className="display text-[1.9rem] sm:text-[2.3rem]">{label}</h1>
-          <div className="no-scrollbar -mx-1 flex max-w-full items-center gap-1 overflow-x-auto px-1">
+          <div className="no-scrollbar flex items-center gap-1 overflow-x-auto max-md:-mx-5 max-md:w-[calc(100%+2.5rem)] max-md:px-5 md:-mx-1 md:max-w-full md:px-1">
             {chips.map((c) => {
               const active = genre === c.id;
               return (
@@ -112,7 +112,7 @@ export function Browse({ type }: { type: MediaType }) {
                   onClick={() => setGenre(c.id)}
                   aria-pressed={active}
                   className={cx(
-                    "relative h-9 shrink-0 rounded-full px-3.5 text-[13px] font-semibold",
+                    "relative h-9 shrink-0 whitespace-nowrap rounded-full px-3.5 text-[13px] font-semibold",
                     active ? "text-ink" : "text-fg/70 hover:text-fg",
                   )}
                 >
@@ -128,15 +128,15 @@ export function Browse({ type }: { type: MediaType }) {
               );
             })}
           </div>
-          <div className="flex items-center gap-2 lg:ml-auto">
-            <div className="flex items-center gap-0.5 rounded-full bg-white/[0.06] p-1 refract">
+          <div className="flex items-center gap-2 max-md:no-scrollbar max-md:-mx-5 max-md:w-[calc(100%+2.5rem)] max-md:overflow-x-auto max-md:px-5 lg:ml-auto">
+            <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-white/[0.06] p-1 refract">
               {SORTS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setSort(s.id)}
                   aria-pressed={sort === s.id}
                   className={cx(
-                    "relative h-8 shrink-0 rounded-full px-3 text-[13px] font-semibold",
+                    "relative h-8 shrink-0 whitespace-nowrap rounded-full px-2.5 text-xs font-semibold md:px-3 md:text-[13px]",
                     sort === s.id ? "text-ink" : "text-muted hover:text-fg",
                   )}
                 >
@@ -152,7 +152,7 @@ export function Browse({ type }: { type: MediaType }) {
               ))}
             </div>
             <div
-              className="flex items-center gap-0.5 rounded-full bg-white/[0.06] p-1 refract"
+              className="flex shrink-0 items-center gap-0.5 rounded-full bg-white/[0.06] p-1 refract"
               role="group"
               aria-label="Vista"
             >

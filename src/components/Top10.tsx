@@ -33,9 +33,9 @@ export function Top10Module({
       eyebrow="Hoy"
       title={`Top 10 ${type === "movie" ? "películas" : "series"} en ${where}`}
       aside={
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="no-scrollbar flex items-center gap-2 max-md:-mx-5 max-md:w-[calc(100%+2.5rem)] max-md:flex-nowrap max-md:overflow-x-auto max-md:px-5 md:flex-wrap">
           {tabs.length > 0 && (
-            <div className="no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto glass rounded-full p-1">
+            <div className="glass order-2 flex shrink-0 items-center gap-0.5 rounded-full p-1 md:order-1 md:max-w-full md:overflow-x-auto md:no-scrollbar">
               {tabs.map((t) => (
                 <button
                   key={t}
@@ -43,7 +43,7 @@ export function Top10Module({
                   aria-pressed={tab === t}
                   aria-label={t === "global" ? "Global" : PLATFORMS[t].name}
                   className={cx(
-                    "relative flex h-8 shrink-0 items-center rounded-full px-3.5 text-[13px] font-semibold transition-opacity duration-300",
+                    "relative flex h-8 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 text-[12px] font-semibold transition-opacity duration-300 md:px-3.5 md:text-[13px]",
                     tab === t ? "text-ink" : "text-fg opacity-60 hover:opacity-100",
                   )}
                 >
@@ -61,14 +61,14 @@ export function Top10Module({
               ))}
             </div>
           )}
-          <div className="flex items-center gap-0.5 glass rounded-full p-1">
+          <div className="glass order-1 flex shrink-0 items-center gap-0.5 rounded-full p-1 md:order-2">
             {(["movie", "series"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
                 aria-pressed={type === t}
                 className={cx(
-                  "relative h-8 rounded-full px-3.5 text-[13px] font-semibold",
+                  "relative h-8 shrink-0 whitespace-nowrap rounded-full px-3 text-[12px] font-semibold md:px-3.5 md:text-[13px]",
                   type === t ? "text-ink" : "text-muted hover:text-fg",
                 )}
               >

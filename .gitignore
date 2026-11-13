@@ -14,3 +14,13 @@ PROPUESTAS_*.md
 # TV Application packages
 public/*.apk
 public/*.wgt
+platforms/
+*.wgt
+*.ipk
+
+# Certificados y llaves privadas
+packaging/tizen/certs/*.key
+packaging/tizen/certs/*.crt
+*.p12
+*.keystore
+*.jks

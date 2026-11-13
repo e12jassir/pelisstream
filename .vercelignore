@@ -1,7 +1,12 @@
 android/
 dist-packages/
 packaging/
+platforms/
+docs/
 *.wgt
+*.ipk
 *.apk
+*.zip
+repomix-*
 .git
 .gradle

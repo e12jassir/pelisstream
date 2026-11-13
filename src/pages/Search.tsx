@@ -18,7 +18,7 @@ type Filter = "all" | "movie" | "series" | "anime";
 export function Search({ initial }: { initial?: string }) {
   const [query, setQuery] = useState(initial ?? "");
   const [filter, setFilter] = useState<Filter>("all");
-  const debounced = useDebounced(query.trim(), 380);
+  const debounced = useDebounced(query.trim(), 220);
   const [results, setResults] = useState<{ q: string; items: MediaItem[] }>({ q: "", items: [] });
   const [loading, setLoading] = useState(false);
   const kidsFilter = useKidsFilter();
@@ -42,13 +42,22 @@ export function Search({ initial }: { initial?: string }) {
     let alive = true;
     setLoading(true);
 
-    Promise.all([
-      searchAll(debounced).catch(() => []),
-      searchAnime(debounced).catch(() => []),
-    ]).then(([cinemetaItems, animeResults]) => {
-      if (!alive) return;
+    searchAll(debounced)
+      .catch(() => [] as MediaItem[])
+      .then((cinemetaItems) => {
+        if (!alive) return;
+        setResults({ q: debounced, items: cinemetaItems });
+        setLoading(false);
+        if (cinemetaItems.length) actions.addRecentSearch(debounced);
+      });
 
-      const animeItems: MediaItem[] = (animeResults || []).map((a) => ({
+    Promise.race([
+      searchAnime(debounced).catch(() => []),
+      new Promise<[]>((resolve) => window.setTimeout(() => resolve([]), 2500)),
+    ]).then((animeResults) => {
+      if (!alive || !animeResults.length) return;
+
+      const animeItems: MediaItem[] = animeResults.map((a) => ({
         id: `anime-${a.id}`,
         type: "series",
         title: a.title,
@@ -66,10 +75,13 @@ export function Search({ initial }: { initial?: string }) {
         trailers: [],
       }));
 
-      const combined = [...cinemetaItems, ...animeItems];
-      setResults({ q: debounced, items: combined });
+      setResults((prev) => {
+        if (prev.q !== debounced) return { q: debounced, items: animeItems };
+        const existing = new Set(prev.items.map((x) => x.id));
+        const extra = animeItems.filter((x) => !existing.has(x.id));
+        return extra.length ? { q: debounced, items: [...prev.items, ...extra] } : prev;
+      });
       setLoading(false);
-      if (combined.length) actions.addRecentSearch(debounced);
     });
 
     return () => {

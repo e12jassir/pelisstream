@@ -56,9 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           type: isSeries ? "series" : "movie",
           title: x.l!,
           year: x.y ? String(x.y) : x.yr || "",
-          poster: x.i?.imageUrl
-            ? x.i.imageUrl.replace(/\._V1_.*\.jpg$/i, "._V1_SX500.jpg")
-            : `https://images.metahub.space/poster/medium/${x.id}/img`,
+          poster: `https://images.metahub.space/poster/medium/${x.id}/img`,
         };
       });
 

@@ -38,13 +38,7 @@ export function TopBar() {
           value={value}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          onChange={(e) => {
-            const next = e.target.value;
-            setValue(next);
-            if (next.trim().length >= 2) {
-              navigate({ name: "search", q: next.trim() });
-            }
-          }}
+          onChange={(e) => setValue(e.target.value)}
           placeholder="Buscar películas, series..."
           aria-label="Buscar películas o series"
           className="min-w-0 flex-1 bg-transparent text-sm font-medium text-fg placeholder:text-dim outline-none"

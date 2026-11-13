@@ -1,3 +1,4 @@
+import { AutoEmbedProvider } from './autoembed.provider';
 import { ProviderCircuitBreaker, type CircuitState } from './circuit-breaker';
 import { PlayLatinProvider } from './playlatin.provider';
 import type {
@@ -123,9 +124,10 @@ export class VideoProviderManager {
 export const createDefaultProviderManager = (): VideoProviderManager =>
   new VideoProviderManager([
     new PlayLatinProvider(),
-    new TwoEmbedProvider(),
-    new VidSrcMeProvider(),
     new VidSrcToProvider(),
+    new VidSrcMeProvider(),
+    new TwoEmbedProvider(),
+    new AutoEmbedProvider(),
   ]);
 
 export const defaultProviderManager = createDefaultProviderManager();

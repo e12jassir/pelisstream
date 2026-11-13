@@ -414,10 +414,10 @@ function PlayerView({
                   </button>
 
                   <button
-                    onClick={() => switchProvider("vidsrc_pm")}
+                    onClick={() => switchProvider("vidsrc_to")}
                     className={cx(
                       "flex items-center gap-3 rounded-2xl p-4 text-left transition hover:scale-[1.02] focus:ring-2 focus:ring-accent",
-                      providerId === "vidsrc_pm"
+                      providerId === "vidsrc_to"
                         ? "bg-accent/20 text-accent ring-1 ring-accent"
                         : "bg-white/[0.05] text-fg hover:bg-white/10",
                     )}

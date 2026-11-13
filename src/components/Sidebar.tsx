@@ -289,7 +289,7 @@ export function Sidebar() {
         <Bezel
           radius={28}
           pad={4}
-          className="glass absolute top-3 bottom-3 left-3 w-[66px]"
+          className="!bg-[rgb(18,16,22)]/40 glass absolute top-3 bottom-3 left-3 w-[66px]"
           coreClassName="h-full !bg-transparent"
         >
           <div className={cx("h-full transition-opacity duration-200", open && "opacity-0")}>
@@ -314,7 +314,7 @@ export function Sidebar() {
               <Bezel
                 radius={28}
                 pad={4}
-                className="glass h-full"
+                className="!bg-[rgb(18,16,22)]/45 glass h-full"
                 coreClassName="h-full !bg-transparent"
               >
                 {body(true)}

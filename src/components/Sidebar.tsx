@@ -273,8 +273,8 @@ export function Sidebar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: EASE_GLIDE }}
-            className="pointer-events-none fixed inset-0 z-40 hidden bg-gradient-to-r from-ink via-ink/80 to-ink/10 md:block"
+            transition={{ duration: 0.35, ease: EASE_GLIDE }}
+            className="pointer-events-none fixed inset-0 z-40 hidden bg-gradient-to-r from-black/40 via-black/15 to-transparent md:block"
           />
         )}
       </AnimatePresence>
@@ -286,42 +286,14 @@ export function Sidebar() {
         onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setOpen(false)}
         className="fixed inset-y-0 left-0 z-50 hidden w-[84px] md:block"
       >
-        <Bezel
-          radius={28}
-          pad={4}
-          className="!bg-[rgb(18,16,22)]/40 glass absolute top-3 bottom-3 left-3 w-[66px]"
-          coreClassName="h-full !bg-transparent"
+        <motion.div
+          initial={false}
+          animate={{ width: open ? 276 : 66 }}
+          transition={{ duration: 0.42, ease: EASE_SPRING }}
+          className="absolute top-3 bottom-3 left-3 overflow-hidden rounded-[26px] bg-white/[0.06] px-1 backdrop-blur-[32px] backdrop-saturate-[180%] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_24px_60px_-12px_rgba(0,0,0,0.75)]"
         >
-          <div className={cx("h-full transition-opacity duration-200", open && "opacity-0")}>
-            {body(false)}
-          </div>
-        </Bezel>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, x: -10, scale: 0.985 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{
-                opacity: 0,
-                x: -10,
-                scale: 0.985,
-                transition: { duration: 0.2, ease: EASE_GLIDE },
-              }}
-              transition={{ duration: 0.45, ease: EASE_SPRING }}
-              style={{ transformOrigin: "left center" }}
-              className="absolute top-3 bottom-3 left-3 w-[288px]"
-            >
-              <Bezel
-                radius={28}
-                pad={4}
-                className="!bg-[rgb(18,16,22)]/45 glass h-full"
-                coreClassName="h-full !bg-transparent"
-              >
-                {body(true)}
-              </Bezel>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {body(open)}
+        </motion.div>
       </nav>
     </>
   );

@@ -38,7 +38,7 @@ export interface IVideoProviderStrategy {
  * Strictly blocks: `allow-top-navigation`, `allow-popups`, `allow-modals`, `allow-downloads`.
  */
 export const SHARED_SANDBOX_FLAGS =
-  'allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen';
+  'allow-scripts allow-same-origin allow-forms allow-presentation';
 
 export const SHARED_ALLOW_ATTRIBUTES = 'fullscreen; autoplay; encrypted-media; picture-in-picture';
 

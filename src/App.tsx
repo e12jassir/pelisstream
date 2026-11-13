@@ -8,7 +8,8 @@ import { Player } from "./components/Player";
 import { ProfileEditor } from "./components/ProfileEditor";
 import { ProfileGate } from "./components/ProfileGate";
 import { GUTTER } from "./components/Rail";
-import { MobileNav, Sidebar } from "./components/Sidebar";
+import { Sidebar, MobileNav } from "./components/Sidebar";
+import { TopBar } from "./components/TopBar";
 import { PinPrompt } from "./components/PinPrompt";
 import { Toasts } from "./components/Toasts";
 import { hover } from "./lib/hover";
@@ -113,6 +114,7 @@ export default function App() {
           />
           <Sidebar />
           <MobileNav />
+          <TopBar />
           <main className="relative overflow-x-clip md:pl-[84px]">
             <AnimatePresence mode="wait">
               <motion.div

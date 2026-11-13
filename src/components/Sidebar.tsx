@@ -34,7 +34,6 @@ interface NavItem {
 }
 
 export const PRIMARY_NAV: NavItem[] = [
-  { route: { name: "search" }, label: "Buscar", icon: Search, match: ["search"] },
   { route: { name: "home" }, label: "Inicio", icon: House, match: ["home", "brand"] },
   { route: { name: "movies" }, label: "Películas", icon: Clapperboard, match: ["movies"] },
   { route: { name: "series" }, label: "Series", icon: Tv, match: ["series"] },
@@ -49,7 +48,7 @@ export const PRIMARY_NAV: NavItem[] = [
 ];
 
 const SECONDARY_NAV: NavItem[] = [
-  { route: { name: "me" }, label: "Mi espacio", icon: UserRound, match: ["me"] },
+  { route: { name: "me" }, label: "Mi cuenta", icon: UserRound, match: ["me"] },
   { route: { name: "settings" }, label: "Ajustes", icon: Settings, match: ["settings"] },
 ];
 
@@ -329,10 +328,10 @@ export function Sidebar() {
 }
 
 const MOBILE_TABS: NavItem[] = [
-  PRIMARY_NAV[1],
   PRIMARY_NAV[0],
-  PRIMARY_NAV[4],
-  PRIMARY_NAV[6],
+  PRIMARY_NAV[1],
+  PRIMARY_NAV[3],
+  PRIMARY_NAV[5],
   SECONDARY_NAV[0],
 ];
 

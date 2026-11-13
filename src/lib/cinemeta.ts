@@ -230,17 +230,62 @@ export async function getMeta(type: MediaType, id: string): Promise<MetaDetails>
   return { item, episodes: type === "series" ? toEpisodes(raw.meta, id) : [] };
 }
 
+interface FuzzySearchHit {
+  id: string;
+  type: MediaType;
+  title: string;
+  year: string;
+  poster: string;
+}
+
+const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? "").replace(/\/+$/, "");
+
+async function searchImdbFallback(query: string): Promise<MediaItem[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) return [];
+    const data = (await res.json()) as { items?: FuzzySearchHit[] };
+    return (data.items ?? []).map((h) => ({
+      id: h.id,
+      type: h.type,
+      title: h.title,
+      poster: h.poster || `https://images.metahub.space/poster/medium/${h.id}/img`,
+      background: `https://images.metahub.space/background/medium/${h.id}/img`,
+      logo: `https://images.metahub.space/logo/medium/${h.id}/img`,
+      year: h.year,
+      releaseInfo: h.year,
+      imdbRating: 0,
+      genres: [],
+      synopsis: "",
+      cast: [],
+      director: [],
+      writer: [],
+      trailers: [],
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function searchAll(query: string): Promise<MediaItem[]> {
-  const [movies, series] = await Promise.all([
+  const [movies, series, fuzzy] = await Promise.all([
     getCatalog({ type: "movie", search: query }).catch(() => []),
     getCatalog({ type: "series", search: query }).catch(() => []),
+    searchImdbFallback(query),
   ]);
   const out: MediaItem[] = [];
+  const seen = new Set<string>();
+  const push = (item: MediaItem) => {
+    if (seen.has(item.id)) return;
+    seen.add(item.id);
+    out.push(item);
+  };
   const max = Math.max(movies.length, series.length);
   for (let i = 0; i < max; i++) {
-    if (movies[i]) out.push(movies[i]);
-    if (series[i]) out.push(series[i]);
+    if (movies[i]) push(movies[i]);
+    if (series[i]) push(series[i]);
   }
+  for (const item of fuzzy) push(item);
   return out;
 }
 

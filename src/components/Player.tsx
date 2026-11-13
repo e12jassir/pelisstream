@@ -109,6 +109,7 @@ function PlayerView({
   const [fullscreen, setFullscreen] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [chrome, setChrome] = useState(true);
+  const [compatMode, setCompatMode] = useState(false);
   const idle = useRef<number | undefined>(undefined);
 
   const providers = useMemo(() => defaultProviderManager.getAll(), []);
@@ -232,6 +233,8 @@ function PlayerView({
           fullscreen={fullscreen}
           toggleFullscreen={toggleFullscreen}
           providerId={providerId}
+          compatMode={compatMode}
+          onToggleCompatMode={() => setCompatMode((v) => !v)}
           onSwitchProvider={switchProvider}
           onRotateProvider={rotateNextProvider}
           onSwitchMode={() => {
@@ -354,6 +357,40 @@ function PlayerView({
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
+              {/* Modo compatible para móviles/dispositivos estrictos */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCompatMode((v) => !v);
+                }}
+                className={cx(
+                  "flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left transition",
+                  compatMode
+                    ? "border-accent/40 bg-accent/15 text-fg"
+                    : "border-white/10 bg-white/[0.04] text-muted hover:bg-white/[0.08] hover:text-fg",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className={cx("size-5 shrink-0", compatMode ? "text-accent" : "text-muted")} />
+                  <div>
+                    <div className="text-sm font-bold text-fg">
+                      Modo compatible {compatMode ? "(Activo)" : ""}
+                    </div>
+                    <div className="text-xs text-muted">
+                      Actívalo si en tu celular o navegador el video no arranca.
+                    </div>
+                  </div>
+                </div>
+                <span
+                  className={cx(
+                    "rounded-full px-2.5 py-1 text-[11px] font-bold",
+                    compatMode ? "bg-accent text-ink" : "bg-white/10 text-muted",
+                  )}
+                >
+                  {compatMode ? "ON" : "OFF"}
+                </span>
+              </button>
+
               {/* Presets de 1 Clic para TV */}
               <div>
                 <span className="mb-3 block text-xs font-bold tracking-wider text-dim uppercase">
@@ -486,6 +523,8 @@ function StreamEngine({
   fullscreen,
   toggleFullscreen,
   providerId,
+  compatMode,
+  onToggleCompatMode,
   onSwitchProvider,
   onRotateProvider,
   onSwitchMode,
@@ -504,6 +543,8 @@ function StreamEngine({
   fullscreen: boolean;
   toggleFullscreen: () => void;
   providerId: string;
+  compatMode: boolean;
+  onToggleCompatMode: () => void;
   onSwitchProvider: (id: string) => void;
   onRotateProvider: () => void;
   onSwitchMode: () => void;
@@ -553,7 +594,7 @@ function StreamEngine({
       window.clearTimeout(fastRevealTimer);
       window.clearTimeout(watchdog);
     };
-  }, [resolution.embedUrl]);
+  }, [resolution.embedUrl, compatMode]);
 
   // Persist watch progress into Continue Watching (`ContinueRail`)
   useEffect(() => {
@@ -605,10 +646,10 @@ function StreamEngine({
       {/* Streaming Iframe con aislamiento de sandbox estricto (bloquea popups, window.open y redirecciones del navegador) */}
       <iframe
         ref={iframeRef}
-        key={resolution.embedUrl}
+        key={`${resolution.embedUrl}:${compatMode ? "compat" : "safe"}`}
         src={resolution.embedUrl}
         title={`Reproductor PelisStream — ${item.title}`}
-        sandbox={resolution.sandboxFlags}
+        sandbox={compatMode ? undefined : resolution.sandboxFlags}
         allow={resolution.allowAttributes}
         referrerPolicy="origin-when-cross-origin"
         allowFullScreen
@@ -645,14 +686,29 @@ function StreamEngine({
                   Audio {resolution.audioHint} · Sandbox blindado activo
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleRotate}
-                className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-fg backdrop-blur-md transition hover:scale-105 hover:bg-white/20 active:scale-95"
-              >
-                <RefreshCw className="size-3.5" />
-                <span>¿Tarda en cargar? Probar otra opción (S)</span>
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleRotate}
+                  className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-fg backdrop-blur-md transition hover:scale-105 hover:bg-white/20 active:scale-95"
+                >
+                  <RefreshCw className="size-3.5" />
+                  <span>¿Tarda en cargar? Probar otra opción (S)</span>
+                </button>
+                {!compatMode && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleCompatMode();
+                      ui.toast("Modo compatible activado");
+                    }}
+                    className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-4 py-2 text-xs font-semibold text-muted backdrop-blur-md transition hover:text-fg"
+                  >
+                    <ShieldCheck className="size-3.5" />
+                    <span>¿No carga en tu dispositivo? Modo compatible</span>
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

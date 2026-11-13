@@ -60,7 +60,7 @@ export function Me() {
           </motion.div>
           <div className="flex-1">
             <div className="mb-2 text-xs font-bold tracking-[0.18em] text-accent uppercase">
-              Mi espacio
+              Mi cuenta
             </div>
             <h1 className="mb-3 display text-5xl tracking-tight sm:text-7xl">{profile.name}</h1>
             <p className="text-muted">
@@ -92,7 +92,7 @@ export function Me() {
       </section>
 
       <section className={cx("mb-8", GUTTER)}>
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-surface p-5 refract">
+        <div className="glass flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5">
           {cloud.username ? (
             <>
               <div className="flex items-center gap-3.5">

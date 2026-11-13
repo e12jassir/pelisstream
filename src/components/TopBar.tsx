@@ -180,6 +180,7 @@ export function TopBar() {
                     >
                       <SmartImage
                         src={item.poster}
+                        fallbackSrc={item.posterFallback}
                         alt={item.title}
                         className="h-14 w-10 shrink-0 rounded-xl bg-surface object-cover"
                       />

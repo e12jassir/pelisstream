@@ -104,10 +104,9 @@ export const toItem = (raw: Raw, fallback: MediaType): MediaItem | null => {
   if (Array.isArray(raw.videos)) {
     for (const v of raw.videos) if (isRecord(v)) seasons = Math.max(seasons, posInt(v.season) ?? 0);
   }
+  const rawPoster = str(raw.poster).replace("/poster/small/", "/poster/medium/");
   // Metahub posters are consistent in size/quality for every IMDb id; other sources vary.
-  const poster = id.startsWith("tt")
-    ? metahub("poster", id)
-    : str(raw.poster).replace("/poster/small/", "/poster/medium/");
+  const poster = id.startsWith("tt") ? metahub("poster", id) : rawPoster;
   const director = Array.isArray(raw.director)
     ? strArr(raw.director)
     : str(raw.director)
@@ -119,6 +118,7 @@ export const toItem = (raw: Raw, fallback: MediaType): MediaItem | null => {
     type,
     title: str(raw.name).trim() || "Sin título",
     poster,
+    posterFallback: rawPoster && rawPoster !== poster ? rawPoster : undefined,
     background: upgradeImageUrl(str(raw.background) || metahub("background", id), id),
     logo: str(raw.logo) || metahub("logo", id),
     year: /^\d{4}/.exec(year)?.[0] ?? year,
@@ -236,6 +236,7 @@ interface FuzzySearchHit {
   title: string;
   year: string;
   poster: string;
+  posterFallback?: string;
 }
 
 const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? "").replace(/\/+$/, "");
@@ -250,6 +251,7 @@ async function searchImdbFallback(query: string): Promise<MediaItem[]> {
       type: h.type,
       title: h.title,
       poster: h.poster || `https://images.metahub.space/poster/medium/${h.id}/img`,
+      posterFallback: h.posterFallback || undefined,
       background: `https://images.metahub.space/background/medium/${h.id}/img`,
       logo: `https://images.metahub.space/logo/medium/${h.id}/img`,
       year: h.year,

@@ -103,11 +103,18 @@ export function PosterCard({
       >
         <SmartImage
           src={item.poster}
+          fallbackSrc={item.posterFallback}
           alt=""
           className="absolute inset-0 size-full object-cover"
           fallback={
-            <div className="absolute inset-0 flex items-end bg-surface-hi p-4">
-              <span className="font-title text-xl leading-tight">{item.title}</span>
+            <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-br from-surface-hi via-surface to-ink p-4">
+              <span className="text-[10px] font-bold tracking-wider text-dim uppercase">
+                {item.type === "movie" ? "Película" : "Serie"}
+                {item.year ? ` · ${item.year}` : ""}
+              </span>
+              <span className="line-clamp-3 font-title text-lg leading-tight text-fg/90">
+                {item.title}
+              </span>
             </div>
           }
         />

@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const json = (await upstream.json()) as { d?: ImdbSuggestionItem[] };
     const items = (json.d ?? [])
       .filter((x) => {
-        if (!x.id?.startsWith("tt") || !x.l) return false;
+        if (!x.id?.startsWith("tt") || !x.l || !x.i?.imageUrl) return false;
         const kind = (x.qid || x.q || "").toLowerCase();
         return (
           kind.includes("movie") ||
@@ -57,6 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           title: x.l!,
           year: x.y ? String(x.y) : x.yr || "",
           poster: `https://images.metahub.space/poster/medium/${x.id}/img`,
+          posterFallback: x.i!.imageUrl!,
         };
       });
 

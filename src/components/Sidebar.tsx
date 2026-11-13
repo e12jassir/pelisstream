@@ -136,24 +136,22 @@ export function Sidebar() {
       aria-label="Navegación principal"
       className="pointer-events-none fixed inset-y-0 left-3 z-50 hidden w-[60px] flex-col justify-between py-4 md:flex"
     >
-      {/* Isla superior izquierda: Perfil */}
+      {/* Esquina superior izquierda: Perfil (solo imagen, sin mini panel) */}
       <div ref={switcherRef} className="pointer-events-auto relative">
-        <div className="glass flex flex-col items-center rounded-[24px] p-1.5">
-          <button
-            type="button"
-            onClick={() => setSwitcher((s) => !s)}
-            aria-expanded={switcher}
-            aria-label={`Perfil: ${profile.name}`}
-            className="group/prof relative flex size-12 items-center justify-center rounded-2xl transition hover:bg-white/[0.08]"
-          >
-            <Avatar index={profile.avatar} className="size-8 shrink-0" />
-            {!switcher && (
-              <span className="glass pointer-events-none absolute left-[64px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
-                {profile.name}
-              </span>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setSwitcher((s) => !s)}
+          aria-expanded={switcher}
+          aria-label={`Perfil: ${profile.name}`}
+          className="group/prof relative flex size-11 items-center justify-center rounded-[24%] transition-transform duration-300 ease-[var(--ease-spring)] hover:scale-105 active:scale-95"
+        >
+          <Avatar index={profile.avatar} className="size-10 shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.65)]" />
+          {!switcher && (
+            <span className="glass pointer-events-none absolute left-[56px] z-50 -translate-x-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold text-fg opacity-0 transition duration-200 group-hover/prof:translate-x-0 group-hover/prof:opacity-100">
+              {profile.name}
+            </span>
+          )}
+        </button>
 
         <AnimatePresence>
           {switcher && (
@@ -162,7 +160,7 @@ export function Sidebar() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -8, scale: 0.96 }}
               transition={{ duration: 0.25, ease: EASE_SPRING }}
-              className="glass absolute top-0 left-[72px] z-50 w-60 space-y-1 rounded-2xl p-2"
+              className="glass absolute top-0 left-[60px] z-50 w-60 space-y-1 rounded-2xl p-2"
             >
               <div className="px-2.5 py-1.5 text-xs font-bold tracking-wider text-dim uppercase">
                 {profile.name}

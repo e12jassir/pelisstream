@@ -7,6 +7,7 @@ export interface MediaItem {
   type: MediaType;
   title: string;
   poster: string;
+  posterFallback?: string;
   background: string;
   logo: string;
   year: string;

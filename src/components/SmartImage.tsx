@@ -1,26 +1,49 @@
-import { useState, type ImgHTMLAttributes } from "react";
+import { useEffect, useState, type ImgHTMLAttributes } from "react";
 import { cx } from "../lib/format";
 
-/** Image that fades in on load and swaps to a fallback node on error. */
+/** Image that fades in on load and swaps to a fallback URL or node on error. */
 export function SmartImage({
   className,
   fallback,
+  fallbackSrc,
+  src,
   onLoad,
   ...rest
-}: ImgHTMLAttributes<HTMLImageElement> & { fallback?: React.ReactNode }) {
+}: ImgHTMLAttributes<HTMLImageElement> & {
+  fallback?: React.ReactNode;
+  fallbackSrc?: string;
+}) {
+  const [usedFallback, setUsedFallback] = useState(false);
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
-  if (state === "error") return <>{fallback ?? null}</>;
+
+  const activeSrc = !usedFallback ? src : fallbackSrc;
+
+  useEffect(() => {
+    setUsedFallback(false);
+    setState("loading");
+  }, [src, fallbackSrc]);
+
+  if (!activeSrc || state === "error") return <>{fallback ?? null}</>;
+
   return (
     <img
       loading="lazy"
       decoding="async"
       draggable={false}
       {...rest}
+      src={activeSrc}
       onLoad={(e) => {
         setState("ok");
         onLoad?.(e);
       }}
-      onError={() => setState("error")}
+      onError={() => {
+        if (!usedFallback && fallbackSrc && fallbackSrc !== src) {
+          setUsedFallback(true);
+          setState("loading");
+        } else {
+          setState("error");
+        }
+      }}
       className={cx(
         "transition-opacity duration-700",
         state === "ok" ? "opacity-100" : "opacity-0",
